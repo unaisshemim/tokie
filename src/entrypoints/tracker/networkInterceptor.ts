@@ -6,12 +6,14 @@ export function interceptNetworkRequests(
   widget: HTMLElement
 ) {
   const originalFetch = window.fetch;
+  console.log("[tracker] bomb1");
 
   window.fetch = async function (
     input: RequestInfo | URL,
     init?: RequestInit
   ): Promise<Response> {
     // Step 1: Determine if the request is to ChatGPT backend
+    console.log("[tracker] bomb2", input, init);
     let requestUrl: string;
     if (typeof input === "string") {
       requestUrl = input;
@@ -22,23 +24,49 @@ export function interceptNetworkRequests(
     } else {
       requestUrl = "";
     }
-
+    console.log("[tracker] bomb3", requestUrl, init);
     const isChatRequest = requestUrl.includes("/backend-api/conversation");
 
-    // Step 2: Try to extract input message content
+    // Step 2: Extract input text from request body
     let inputText = "";
-    let model = "gpt-3.5-turbo"; // fallback
+    let model = "gpt-3.5-turbo"; // default fallback
 
-    if (isChatRequest && init?.body) {
+    async function readRequestBody(init?: RequestInit): Promise<any> {
+      if (!init?.body) return null;
+
+      if (typeof init.body === "string") {
+        return JSON.parse(init.body);
+      }
+
       try {
-        const body = JSON.parse(init.body.toString());
-        const parts = body?.messages?.[0]?.content?.parts;
+        const reader = (init.body as ReadableStream<Uint8Array>).getReader();
+        const decoder = new TextDecoder("utf-8");
+        let fullBody = "";
+
+        let done = false;
+        while (!done) {
+          const { value, done: streamDone } = await reader.read();
+          done = streamDone;
+          fullBody += decoder.decode(value || new Uint8Array(), {
+            stream: true,
+          });
+        }
+
+        return JSON.parse(fullBody);
+      } catch (e) {
+        console.warn("[tracker] Failed to decode request body", e);
+        return null;
+      }
+    }
+
+    if (isChatRequest) {
+      const bodyJson = await readRequestBody(init);
+      if (bodyJson) {
+        const parts = bodyJson?.messages?.[0]?.content?.parts;
         if (Array.isArray(parts)) {
           inputText = parts.join(" ");
         }
-        model = body?.model || "gpt-4";
-      } catch (e) {
-        console.warn("[tracker] Failed to parse request body", e);
+        model = bodyJson?.model || model;
       }
     }
 
@@ -51,7 +79,7 @@ export function interceptNetworkRequests(
       usage.inputTokens += inputTokenCount;
       console.log("[tracker] Input tokens:", inputTokenCount);
 
-      // Step 5: Handle streamed output tokens from response
+      // Step 5: Handle streamed output
       const cloned = response.clone();
       const reader = cloned.body?.getReader();
       if (reader) {
@@ -70,33 +98,29 @@ export function interceptNetworkRequests(
 
           for (const line of lines) {
             const clean = line.trim();
-            if (clean.startsWith("data:")) {
-              try {
-                const jsonStr = clean.replace(/^data:\s*/, "");
-                if (jsonStr === "[DONE]") continue;
+            if (!clean.startsWith("data:")) continue;
 
-                const parsed = JSON.parse(jsonStr);
+            const jsonStr = clean.replace(/^data:\s*/, "");
+            if (jsonStr === "[DONE]") continue;
 
-                if (typeof parsed.v === "string") {
-                  messageParts.push(parsed.v);
-                } else if (parsed?.v?.message?.content?.parts?.[0]) {
-                  messageParts.push(parsed.v.message.content.parts[0]);
-                } else if (parsed?.v) {
-                  const delta = parsed.v;
-                  if (typeof delta === "string") {
-                    messageParts.push(delta);
-                  } else if (delta?.message?.content?.parts?.[0]) {
-                    messageParts.push(delta.message.content.parts[0]);
-                  }
-                }
-              } catch {
-                // Skip malformed data
+            try {
+              const parsed = JSON.parse(jsonStr);
+
+              // Handle various delta formats
+              const delta = parsed?.delta?.v;
+              if (typeof delta === "string") {
+                messageParts.push(delta);
+              } else if (delta?.message?.content?.parts?.[0]) {
+                messageParts.push(delta.message.content.parts[0]);
               }
+            } catch (err) {
+              // Skip malformed lines
+              console.warn("[tracker] Malformed delta line", clean);
             }
           }
         }
 
-        // Step 6: Count output tokens and update usage
+        // Step 6: Count output tokens
         const fullMessage = messageParts.join("");
         const outputTokenCount = countTokens(fullMessage);
         usage.outputTokens += outputTokenCount;

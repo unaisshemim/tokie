@@ -28,24 +28,38 @@ export function getChatGPTSessionId(): string | null {
   return match ? match[1] : null;
 }
 
-export async function loadTokenUsage(
-  sessionId: string
-): Promise<TokenUsage | null> {
+export async function loadTokenUsage(sessionId: string): Promise<TokenUsage> {
   console.log("[tokenUsage] Loading usage for session:", sessionId);
   try {
     const data = await chrome.storage.local.get(sessionId);
+
     if (!data[sessionId]) {
-      console.log(
-        "[tokenUsage] No existing data found for session:",
-        sessionId
-      );
-      return null;
+      console.log("[tokenUsage] No existing data found. Creating new session.");
+
+      const newUsage: TokenUsage = {
+        ...DEFAULT_USAGE,
+        sessionId,
+        sessionStart: Date.now(),
+      };
+
+      await saveTokenUsage(newUsage);
+      return newUsage;
     }
+
     console.log("[tokenUsage] Found existing data:", data[sessionId]);
     return data[sessionId];
   } catch (error) {
     console.error("[tokenUsage] Error loading usage:", error);
-    return null;
+
+    // Fallback in case of error: return a new session
+    const fallbackUsage: TokenUsage = {
+      ...DEFAULT_USAGE,
+      sessionId,
+      sessionStart: Date.now(),
+    };
+
+    await saveTokenUsage(fallbackUsage);
+    return fallbackUsage;
   }
 }
 

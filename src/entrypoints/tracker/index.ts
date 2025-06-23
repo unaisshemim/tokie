@@ -1,4 +1,3 @@
-// src/entrypoints/tracker/index.ts
 import { interceptNetworkRequests } from "./networkInterceptor";
 import { loadTokenUsage, DEFAULT_USAGE, TokenUsage } from "./tokeUsage";
 import { createWidget } from "./ui";
@@ -15,7 +14,6 @@ function waitForFirstUserInput(): Promise<HTMLElement> {
         );
 
         for (const el of elements) {
-          // Optional: ensure it's not already resolved
           if (el.textContent?.trim()) {
             observer.disconnect();
             resolve(el as HTMLElement);
@@ -31,7 +29,6 @@ function waitForFirstUserInput(): Promise<HTMLElement> {
       characterData: true,
     });
 
-    // Fallback: check if already present in DOM
     const existing = document.querySelector(
       '[data-message-author-role="user"]'
     );
@@ -42,18 +39,70 @@ function waitForFirstUserInput(): Promise<HTMLElement> {
   });
 }
 
-async function initTokenTracker() {
-  console.log("[tracker] Waiting for first user input...");
-  await waitForFirstUserInput();
-  console.log("[tracker] First user input detected. Initializing tracker...");
+function setupFetchInterceptor() {
+  const originalFetch = window.fetch;
 
+  window.fetch = async function (...args) {
+    const [url] = args;
+    const response = await originalFetch(...args);
+
+    if (String(url).includes("/backend-api/conversation")) {
+      console.log("[tracker] Intercepted fetch response for:", url);
+      const clonedResponse = response.clone();
+      readStream(clonedResponse);
+    }
+
+    return response;
+  };
+}
+
+async function readStream(response: Response) {
+  const reader = response.body?.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  if (!reader) return;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) {
+      console.log("[tracker] Stream finished.");
+      break;
+    }
+
+    buffer += decoder.decode(value, { stream: true });
+    const events = buffer.split("\n\n");
+    buffer = events.pop() || "";
+
+    for (const event of events) {
+      if (event.startsWith("data: ")) {
+        const data = event.substring(6);
+        if (data.trim() === "[DONE]") {
+          console.log("[tracker] End of stream marker [DONE] received.");
+          continue;
+        }
+        try {
+          const jsonData = JSON.parse(data);
+          chrome.runtime.sendMessage({
+            type: "CHATGPT_STREAM_DATA",
+            payload: jsonData,
+          });
+        } catch (e) {
+          console.error(
+            "[tracker] Error parsing stream JSON:",
+            e,
+            "Raw data:",
+            data
+          );
+        }
+      }
+    }
+  }
+}
+
+async function initTokenTracker() {
   const sessionId = getChatGPTSessionId() || `session-${Date.now()}`;
   sessionStorage.setItem("chatgpt-session-id", sessionId);
-
-  console.log(
-    "[tracker] First user message detected. Using session ID:",
-    sessionId
-  );
 
   let usage = await loadTokenUsage(sessionId);
   if (!usage) {
@@ -65,8 +114,11 @@ async function initTokenTracker() {
   }
 
   const widget = createWidget(usage);
-  console.log("[tracker] Widget created:", widget);
   interceptNetworkRequests(usage, widget);
+
+  setupFetchInterceptor(); // <-- Add this line
+
+  await waitForFirstUserInput();
 }
 
 export default initTokenTracker;
