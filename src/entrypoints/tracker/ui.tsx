@@ -21,15 +21,12 @@ export function createWidget(usage: TokenUsage): HTMLElement {
   return container; // maintain compatibility with startObserver and interceptNetworkRequests
 }
 export function updateWidgetUI(usage: TokenUsage, widget: HTMLElement) {
-  const container = document.createElement("div");
-  document.body.appendChild(container);
-
-  const root = ReactDOM.createRoot(container);
+  const root = ReactDOM.createRoot(widget);
   root.render(
     <Widget
       usage={usage}
       onNewSession={() => window.open("https://chatgpt.com/", "_blank")}
-      onReset={() => location.reload()} // or a smarter reset if you wish
+      onReset={() => location.reload()}
     />
   );
 }

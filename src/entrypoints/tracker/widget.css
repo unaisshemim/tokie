@@ -1,8 +1,12 @@
-.token-tracker-widget {
+.token-tracker-container {
   position: fixed;
   bottom: 20px;
   right: 20px;
   z-index: 999999;
+}
+
+.token-tracker-widget {
+  position: relative;
   width: 280px;
   background: #ffffff;
   color: #111827;
@@ -12,6 +16,8 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
   overflow: hidden;
   user-select: none;
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
 }
 
 .token-tracker-widget .widget-header {
