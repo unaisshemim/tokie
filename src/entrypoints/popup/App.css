@@ -1,0 +1,57 @@
+.popup-container {
+  padding: 16px;
+  font-family: sans-serif;
+  color: #fff;
+  background: #1e1e1e;
+  border-radius: 10px;
+  width: 300px;
+  text-align: center;
+}
+
+h2 {
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.info {
+  text-align: left;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.progress-container {
+  height: 10px;
+  background: #444;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progress-bar {
+  height: 10px;
+  transition: width 0.3s ease;
+}
+
+.token-count {
+  font-size: 16px;
+  margin-bottom: 6px;
+}
+
+.status {
+  margin: 8px 0;
+  font-weight: bold;
+}
+
+.refresh-btn {
+  padding: 8px 16px;
+  background: #333;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.refresh-btn:hover {
+  background: #555;
+}
