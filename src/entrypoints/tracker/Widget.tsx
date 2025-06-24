@@ -36,7 +36,7 @@ export const Widget: React.FC<WidgetProps> = ({
   }, [usage.sessionStart]);
 
   const progressPercentage = Math.min(
-    (usage.totalTokens / usage.maxTokens) * 100,
+    ((usage.inputTokens + usage.outputTokens) / usage.maxTokens) * 100,
     100
   );
 
@@ -83,7 +83,7 @@ export const Widget: React.FC<WidgetProps> = ({
                 ></div>
               </div>
               <span className="progress-text">
-                {usage.totalTokens.toLocaleString()} /{" "}
+                {(usage.inputTokens + usage.outputTokens).toLocaleString()} /{" "}
                 {usage.maxTokens.toLocaleString()}
               </span>
             </div>

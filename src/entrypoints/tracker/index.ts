@@ -2,6 +2,7 @@ import { interceptNetworkRequests } from "./networkInterceptor";
 import { loadTokenUsage, DEFAULT_USAGE, TokenUsage } from "./tokeUsage";
 import { createWidget } from "./ui";
 import { getChatGPTSessionId } from "./tokeUsage";
+import { startMessageObserver } from "./observer";
 
 function waitForFirstUserInput(): Promise<HTMLElement> {
   return new Promise((resolve) => {
@@ -112,9 +113,9 @@ async function initTokenTracker() {
       sessionStart: Date.now(),
     };
   }
-
+  console.log("[tracker] Token usage loaded:", usage);
   const widget = createWidget(usage);
-  interceptNetworkRequests(usage, widget);
+  startMessageObserver(usage, widget);
   await waitForFirstUserInput();
 }
 
