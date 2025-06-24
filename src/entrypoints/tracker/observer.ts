@@ -10,6 +10,8 @@ export const startMessageObserver = (
   // Debounced AI response buffer logic
   let buffer = "";
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+  //delay to start observing AI responses
   const DEBOUNCE_DELAY = 800;
 
   const handleAssistantUpdate = (text: string) => {
