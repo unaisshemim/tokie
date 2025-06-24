@@ -24,6 +24,7 @@ function App() {
       if (message.type === "TOKENS_UPDATE") {
         setTokens(message.tokens);
       }
+      return true;
     });
   }, []);
 

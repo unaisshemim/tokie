@@ -1,3 +1,5 @@
+import { countTokens, saveTokenUsage } from "./tracker/tokeUsage";
+
 export default defineBackground(() => {
   console.log("[tracker] Background script initialized");
 
@@ -111,4 +113,18 @@ export default defineBackground(() => {
   );
 
   // --- Listener for content-script streamed messages ---
+});
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === "updateUsage") {
+    try {
+      const tokenCount = countTokens(message.text);
+      console.log("[tracker] Token count for message:", tokenCount);
+
+      sendResponse({ success: true }); // ✅ MUST respond
+    } catch (err) {
+      sendResponse({ success: false });
+    }
+    return true; // ✅ Keep message channel alive
+  }
 });

@@ -115,9 +115,6 @@ async function initTokenTracker() {
 
   const widget = createWidget(usage);
   interceptNetworkRequests(usage, widget);
-
-  setupFetchInterceptor(); // <-- Add this line
-
   await waitForFirstUserInput();
 }
 

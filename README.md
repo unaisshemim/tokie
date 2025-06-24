@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="src/assets/logo.png" alt="Tokie Logo" width="120" />
+</p>
+
 # Tokie: ChatGPT Token Usage Tracker
 
 Tokie is a browser extension designed to track and visualize your token usage while interacting with ChatGPT. It provides real-time feedback on your token consumption, helping you monitor and manage your usage efficiently.

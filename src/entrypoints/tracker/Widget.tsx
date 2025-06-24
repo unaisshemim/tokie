@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { TokenUsage } from "./tokeUsage";
+import logo from "../../assets/logo.png";
 import "./widget.css";
 
 interface WidgetProps {
@@ -22,7 +23,7 @@ export const Widget: React.FC<WidgetProps> = ({
   onReset,
   onNewSession,
 }) => {
-  const [collapsed, setCollapsed] = useState(false);
+  const [hovered, setHovered] = useState(false);
   const [sessionAge, setSessionAge] = useState(
     formatDuration(Date.now() - usage.sessionStart)
   );
@@ -41,60 +42,70 @@ export const Widget: React.FC<WidgetProps> = ({
 
   return (
     <div
-      className="token-tracker-widget"
+      className="token-tracker-float-container"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{ position: "fixed", right: 20, bottom: 20, zIndex: 999999 }}
     >
-      <div className="widget-header">
-        <span className="widget-title">Token Usage</span>
-        <button
-          className="widget-toggle"
-          onClick={() => setCollapsed(!collapsed)}
-        >
-          {collapsed ? "+" : "−"}
-        </button>
-      </div>
-      {!collapsed && (
-        <div className="widget-content">
-          <div className="progress-container">
-            <div className="progress-bar">
-              <div
-                className="progress-fill"
-                style={{
-                  width: `${progressPercentage}%`,
-                  backgroundColor:
-                    progressPercentage > 90
-                      ? "#ef4444"
-                      : progressPercentage > 70
-                      ? "#f59e0b"
-                      : "#10b981",
-                }}
-              ></div>
-            </div>
-            <span className="progress-text">
-              {usage.totalTokens.toLocaleString()} /{" "}
-              {usage.maxTokens.toLocaleString()}
-            </span>
+      <img
+        src={logo}
+        alt="Tokie Logo"
+        className="token-tracker-logo-float"
+        style={{
+          cursor: "pointer",
+          background: "none",
+          borderRadius: 0,
+          boxShadow: "none",
+          width: 56,
+          height: 56,
+          padding: 0,
+        }}
+      />
+      {hovered && (
+        <div className="token-tracker-widget-float-details">
+          <div className="widget-header">
+            <span className="widget-title">Token Usage</span>
           </div>
-
-          <div className="token-details">
-            <div className="token-row">
-              <span>Input:</span>
-              <span>{usage.inputTokens.toLocaleString()}</span>
+          <div className="widget-content">
+            <div className="progress-container">
+              <div className="progress-bar">
+                <div
+                  className="progress-fill"
+                  style={{
+                    width: `${progressPercentage}%`,
+                    backgroundColor:
+                      progressPercentage > 90
+                        ? "#ef4444"
+                        : progressPercentage > 70
+                        ? "#f59e0b"
+                        : "#10b981",
+                  }}
+                ></div>
+              </div>
+              <span className="progress-text">
+                {usage.totalTokens.toLocaleString()} /{" "}
+                {usage.maxTokens.toLocaleString()}
+              </span>
             </div>
-            <div className="token-row">
-              <span>Output:</span>
-              <span>{usage.outputTokens.toLocaleString()}</span>
+            <div className="token-details">
+              <div className="token-row">
+                <span>Input:</span>
+                <span>{usage.inputTokens.toLocaleString()}</span>
+              </div>
+              <div className="token-row">
+                <span>Output:</span>
+                <span>{usage.outputTokens.toLocaleString()}</span>
+              </div>
+              <div className="token-row">
+                <span>Session:</span>
+                <span>{sessionAge}</span>
+              </div>
+              {usage.syncing && <div className="sync-status">Syncing...</div>}
             </div>
-            <div className="token-row">
-              <span>Session:</span>
-              <span>{sessionAge}</span>
+            <div className="widget-actions">
+              <button onClick={onNewSession}>New Session</button>
+              <button onClick={onReset}>Reset</button>
             </div>
-            {usage.syncing && <div className="sync-status">Syncing...</div>}
-          </div>
-
-          <div className="widget-actions">
-            <button onClick={onNewSession}>New Session</button>
-            <button onClick={onReset}>Reset</button>
           </div>
         </div>
       )}
