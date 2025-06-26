@@ -48,22 +48,6 @@ Whether you’re a casual user or a power user writing long prompts, Tokie helps
 
 ---
 
-## 🧱 <span style="color:#03A9F4">Project Structure</span>
-```
-src/
-  entrypoints/
-    tracker/
-      index.ts             # Main tracker logic
-      networkInterceptor.ts# Network request capture
-      tokenUsage.ts        # Token math + session context
-      ui.tsx               # Widget mount logic
-      Widget.tsx           # React token widget
-      widget.css           # Styling
-public/
-  icon/                    # Extension icons
-```
-
----
 
 ## ⚙️ <span style="color:#FF5722">Getting Started</span>
 
