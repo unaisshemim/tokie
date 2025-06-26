@@ -29,67 +29,43 @@ export function getChatGPTSessionId(): string | null {
 }
 
 export async function loadTokenUsage(sessionId: string): Promise<TokenUsage> {
-  console.log("[tokenUsage] Loading usage for session:", sessionId);
-  try {
-    const data = await chrome.storage.local.get("tokenUsage");
-    let sessions: Record<string, TokenUsage> = {};
-    if (data && data.tokenUsage) {
-      sessions = data.tokenUsage;
-    }
-    if (!sessions[sessionId]) {
-      console.log("[tokenUsage] No existing data found. Creating new session.");
-      const newUsage: TokenUsage = {
-        ...DEFAULT_USAGE,
-        sessionId,
-        sessionStart: Date.now(),
-      };
-      await saveTokenUsage(newUsage);
-      return newUsage;
-    }
-    console.log("[tokenUsage] Found existing data:", sessions[sessionId]);
-    return sessions[sessionId];
-  } catch (error) {
-    console.error("[tokenUsage] Error loading usage:", error);
-    // Fallback in case of error: return a new session
-    const fallbackUsage: TokenUsage = {
+  const data = await chrome.storage.local.get("tokenUsage");
+  const sessions: Record<string, TokenUsage> = data.tokenUsage || {};
+
+  let usage: TokenUsage;
+
+  if (!sessions[sessionId]) {
+    usage = {
       ...DEFAULT_USAGE,
       sessionId,
       sessionStart: Date.now(),
     };
-    await saveTokenUsage(fallbackUsage);
-    return fallbackUsage;
+  } else {
+    usage = sessions[sessionId];
   }
+
+  // Update both tokenUsage map and currentSession
+  sessions[sessionId] = usage;
+  await chrome.storage.local.set({
+    tokenUsage: sessions,
+    currentSession: usage,
+  });
+
+  return usage;
 }
 
 export async function saveTokenUsage(usage: TokenUsage): Promise<void> {
-  if (!usage.sessionId) {
-    console.error("[tokenUsage] Cannot save usage without sessionId:", usage);
-    return;
-  }
-  console.log("[tokenUsage] Saving usage for session:", usage.sessionId);
-  try {
-    // Get all sessions as a single object under 'tokenUsage'
-    let data = await chrome.storage.local.get("tokenUsage");
-    let sessions: Record<string, TokenUsage> = {};
-    if (data && data.tokenUsage) {
-      sessions = data.tokenUsage;
-    }
-    // Update or add the current session
-    sessions[usage.sessionId] = usage;
-    usage.syncing = true;
-    await chrome.storage.local.set({ tokenUsage: sessions });
-    console.log("[tokenUsage] Successfully saved usage");
-    usage.syncing = false;
-    sessions[usage.sessionId] = usage;
-    await chrome.storage.local.set({ tokenUsage: sessions });
-  } catch (error) {
-    console.error("[tokenUsage] Error saving usage:", error);
-    usage.syncing = false;
-    // Try to save at least the current session in the object format
-    await chrome.storage.local.set({
-      tokenUsage: { [usage.sessionId]: usage },
-    });
-  }
+  if (!usage.sessionId) return;
+
+  const data = await chrome.storage.local.get("tokenUsage");
+  const sessions: Record<string, TokenUsage> = data.tokenUsage || {};
+
+  sessions[usage.sessionId] = usage;
+
+  await chrome.storage.local.set({
+    tokenUsage: sessions,
+    currentSession: usage,
+  });
 }
 
 export function countTokens(text: string): number {
@@ -100,4 +76,13 @@ export function countTokens(text: string): number {
     console.error("[tokenUsage] Failed to count tokens:", e);
     return 0;
   }
+}
+
+export async function setCurrentSession(usage: TokenUsage) {
+  await chrome.storage.local.set({ currentSession: usage });
+}
+
+export async function getCurrentSession(): Promise<TokenUsage | null> {
+  const data = await chrome.storage.local.get("currentSession");
+  return data.currentSession || null;
 }

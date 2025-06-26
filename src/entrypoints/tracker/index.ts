@@ -40,67 +40,6 @@ function waitForFirstUserInput(): Promise<HTMLElement> {
   });
 }
 
-function setupFetchInterceptor() {
-  const originalFetch = window.fetch;
-
-  window.fetch = async function (...args) {
-    const [url] = args;
-    const response = await originalFetch(...args);
-
-    if (String(url).includes("/backend-api/conversation")) {
-      console.log("[tracker] Intercepted fetch response for:", url);
-      const clonedResponse = response.clone();
-      readStream(clonedResponse);
-    }
-
-    return response;
-  };
-}
-
-async function readStream(response: Response) {
-  const reader = response.body?.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-
-  if (!reader) return;
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) {
-      console.log("[tracker] Stream finished.");
-      break;
-    }
-
-    buffer += decoder.decode(value, { stream: true });
-    const events = buffer.split("\n\n");
-    buffer = events.pop() || "";
-
-    for (const event of events) {
-      if (event.startsWith("data: ")) {
-        const data = event.substring(6);
-        if (data.trim() === "[DONE]") {
-          console.log("[tracker] End of stream marker [DONE] received.");
-          continue;
-        }
-        try {
-          const jsonData = JSON.parse(data);
-          chrome.runtime.sendMessage({
-            type: "CHATGPT_STREAM_DATA",
-            payload: jsonData,
-          });
-        } catch (e) {
-          console.error(
-            "[tracker] Error parsing stream JSON:",
-            e,
-            "Raw data:",
-            data
-          );
-        }
-      }
-    }
-  }
-}
-
 async function initTokenTracker() {
   const sessionId = getChatGPTSessionId() || `session-${Date.now()}`;
   sessionStorage.setItem("chatgpt-session-id", sessionId);
