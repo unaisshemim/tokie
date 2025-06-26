@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { TokenUsage } from "./tokeUsage";
-import logo from "../../assets/logo.png";
+import HappyCat from "../../assets/happyCat.png";
+import SadCat from "../../assets/sadCat.png";
+import SleepingCat from "../../assets/sleepingCat.png";
 import "./widget.css";
 
 interface WidgetProps {
@@ -35,10 +37,34 @@ export const Widget: React.FC<WidgetProps> = ({
     return () => clearInterval(interval);
   }, [usage.sessionStart]);
 
+  useEffect(() => {
+    const handleStorageChange = async () => {
+      const { currentSession } = await chrome.storage.local.get(
+        "currentSession"
+      );
+      if (currentSession && currentSession !== usage.sessionId) {
+        onNewSession();
+      }
+    };
+
+    chrome.storage.onChanged.addListener(handleStorageChange);
+
+    return () => {
+      chrome.storage.onChanged.removeListener(handleStorageChange);
+    };
+  }, [usage.sessionId, onNewSession]);
+
   const progressPercentage = Math.min(
     ((usage.inputTokens + usage.outputTokens) / usage.maxTokens) * 100,
     100
   );
+
+  const currentImage =
+    progressPercentage >= 100
+      ? SleepingCat
+      : progressPercentage >= 50
+      ? SadCat
+      : HappyCat;
 
   return (
     <div
@@ -48,7 +74,7 @@ export const Widget: React.FC<WidgetProps> = ({
       style={{ position: "fixed", right: 20, bottom: 20, zIndex: 999999 }}
     >
       <img
-        src={logo}
+        src={currentImage}
         alt="Tokie Logo"
         className="token-tracker-logo-float"
         style={{
@@ -56,13 +82,23 @@ export const Widget: React.FC<WidgetProps> = ({
           background: "none",
           borderRadius: 0,
           boxShadow: "none",
-          width: 56,
-          height: 56,
+          width: 90,
+          height: 90,
           padding: 0,
         }}
       />
       {hovered && (
-        <div className="token-tracker-widget-float-details">
+        <div
+          className="token-tracker-widget-float-details"
+          style={{
+            position: "absolute",
+            bottom: "100%" /* Position the hover window on top */,
+            right: "0" /* Fix syntax error */,
+            marginBottom:
+              "10px" /* Add some spacing between the image and the hover window */,
+            animation: "fadeIn 0.3s ease-in-out" /* Add fade-in animation */,
+          }}
+        >
           <div className="widget-header">
             <span className="widget-title">Token Usage</span>
           </div>

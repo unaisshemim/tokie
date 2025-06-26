@@ -19,7 +19,7 @@ export const DEFAULT_USAGE: TokenUsage = {
   outputTokens: 0,
   totalTokens: 0,
   syncing: false,
-  maxTokens: 128000,
+  maxTokens: 14000,
 };
 
 export function getChatGPTSessionId(): string | null {
