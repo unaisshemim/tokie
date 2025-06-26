@@ -39,6 +39,14 @@ Whether you’re a casual user or a power user writing long prompts, Tokie helps
 - 🧪 **<span style="color:#FFC107">Accurate & Transparent</span>**: Know the limits. Plan your prompts. Never be surprised again.
 
 ---
+## 📊 <span style="color:#4CAF50">Token Limits Table</span>
+| Model               | Token Limit      | Approx. Word Count |
+|---------------------|------------------|---------------------|
+| Free GPT-3.5        | ~16K tokens      | ~12K words          |
+| GPT-4 (Free/Plus)   | ~128K tokens     | ~96K words          |
+| GPT-4.1 (Plus/Pro)  | Up to 1M tokens  | ~750K words         |
+
+---
 
 ## 🧱 <span style="color:#03A9F4">Project Structure</span>
 ```
@@ -84,14 +92,6 @@ npm run build
 
 ---
 
-## 📊 <span style="color:#4CAF50">Token Limits Table</span>
-| Model               | Token Limit      | Approx. Word Count |
-|---------------------|------------------|---------------------|
-| Free GPT-3.5        | ~16K tokens      | ~12K words          |
-| GPT-4 (Free/Plus)   | ~128K tokens     | ~96K words          |
-| GPT-4.1 (Plus/Pro)  | Up to 1M tokens  | ~750K words         |
-
----
 
 ## 🤝 <span style="color:#2196F3">Contribute</span>
 Pull requests are welcome! Have an idea to improve Tokie? Open an issue or start a discussion.
