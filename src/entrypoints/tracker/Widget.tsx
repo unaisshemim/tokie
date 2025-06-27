@@ -37,23 +37,6 @@ export const Widget: React.FC<WidgetProps> = ({
     return () => clearInterval(interval);
   }, [usage.sessionStart]);
 
-  useEffect(() => {
-    const handleStorageChange = async () => {
-      const { currentSession } = await chrome.storage.local.get(
-        "currentSession"
-      );
-      if (currentSession && currentSession !== usage.sessionId) {
-        onNewSession();
-      }
-    };
-
-    chrome.storage.onChanged.addListener(handleStorageChange);
-
-    return () => {
-      chrome.storage.onChanged.removeListener(handleStorageChange);
-    };
-  }, [usage.sessionId, onNewSession]);
-
   const progressPercentage = Math.min(
     ((usage.inputTokens + usage.outputTokens) / usage.maxTokens) * 100,
     100
