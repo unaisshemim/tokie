@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="src/assets/logo.png" alt="Tokie Logo" width="200" />
+  <img src="src/assets/happyCat.png" alt="Tokie Logo" width="200" />
 </p>
 
 <h1 align="center">🧠 <span style="color:#4CAF50">Tokie</span> — <span style="color:#FF5722">Know When ChatGPT Is Reaching Its Limit</span></h1>
