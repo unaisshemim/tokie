@@ -8,7 +8,6 @@ import "./widget.css";
 interface WidgetProps {
   usage: TokenUsage;
   onReset: () => void;
-  onNewSession: () => void;
 }
 
 function formatDuration(ms: number): string {
@@ -20,11 +19,7 @@ function formatDuration(ms: number): string {
   return `${seconds}s`;
 }
 
-export const Widget: React.FC<WidgetProps> = ({
-  usage,
-  onReset,
-  onNewSession,
-}) => {
+export const Widget: React.FC<WidgetProps> = ({ usage, onReset }) => {
   const [hovered, setHovered] = useState(false);
   const [sessionAge, setSessionAge] = useState(
     formatDuration(Date.now() - usage.sessionStart)
@@ -122,7 +117,6 @@ export const Widget: React.FC<WidgetProps> = ({
               {usage.syncing && <div className="sync-status">Syncing...</div>}
             </div>
             <div className="widget-actions">
-              <button onClick={onNewSession}>New Session</button>
               <button onClick={onReset}>Reset</button>
             </div>
           </div>
