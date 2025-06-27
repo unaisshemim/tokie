@@ -13,7 +13,6 @@ export function createWidget(usage: TokenUsage): HTMLElement {
   root.render(
     <Widget
       usage={usage}
-      onNewSession={() => window.open("https://chatgpt.com/", "_blank")}
       onReset={() => location.reload()} // or a smarter reset if you wish
     />
   );
@@ -22,11 +21,5 @@ export function createWidget(usage: TokenUsage): HTMLElement {
 }
 export function updateWidgetUI(usage: TokenUsage, widget: HTMLElement) {
   const root = ReactDOM.createRoot(widget);
-  root.render(
-    <Widget
-      usage={usage}
-      onNewSession={() => window.open("https://chatgpt.com/", "_blank")}
-      onReset={() => location.reload()}
-    />
-  );
+  root.render(<Widget usage={usage} onReset={() => location.reload()} />);
 }
