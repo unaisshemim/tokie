@@ -1,4 +1,3 @@
-import { interceptNetworkRequests } from "./networkInterceptor";
 import { loadTokenUsage, DEFAULT_USAGE, TokenUsage } from "./tokeUsage";
 import { createWidget } from "./ui";
 import { getChatGPTSessionId } from "./tokeUsage";

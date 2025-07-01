@@ -1,30 +1,37 @@
 import React, { useState, useEffect } from "react";
-import { TokenUsage } from "./tokeUsage";
 import HappyCat from "../../assets/happyCat.png";
 import SadCat from "../../assets/sadCat.png";
 import SleepingCat from "../../assets/sleepingCat.png";
-import "./widget.css";
+import "@/assets/tailwind.css";
+import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
+import "react-circular-progressbar/dist/styles.css";
 
+interface TokenUsage {
+  inputTokens: number;
+  outputTokens: number;
+  maxTokens: number;
+  sessionStart: number;
+}
 interface WidgetProps {
   usage: TokenUsage;
   onReset: () => void;
 }
 
-function formatDuration(ms: number): string {
-  const seconds = Math.floor(ms / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-  if (hours > 0) return `${hours}h ${minutes % 60}m`;
-  if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
-  return `${seconds}s`;
-}
+const defaultUsage: TokenUsage = {
+  inputTokens: 0,
+  outputTokens: 0,
+  maxTokens: 10000,
+  sessionStart: Date.now(),
+};
 
 export const Widget: React.FC<WidgetProps> = ({ usage, onReset }) => {
+  // const [currentUsage, setCurrentUsage] = useState<TokenUsage>(defaultUsage);
   const [hovered, setHovered] = useState(false);
   const [sessionAge, setSessionAge] = useState(
     formatDuration(Date.now() - usage.sessionStart)
   );
 
+  // 🟡 Live update time display
   useEffect(() => {
     const interval = setInterval(() => {
       setSessionAge(formatDuration(Date.now() - usage.sessionStart));
@@ -32,9 +39,10 @@ export const Widget: React.FC<WidgetProps> = ({ usage, onReset }) => {
     return () => clearInterval(interval);
   }, [usage.sessionStart]);
 
+  const usedTokens = usage.inputTokens + usage.outputTokens;
   const progressPercentage = Math.min(
-    ((usage.inputTokens + usage.outputTokens) / usage.maxTokens) * 100,
-    100
+    (usedTokens / usage.maxTokens) * 100,
+    150
   );
 
   const currentImage =
@@ -44,84 +52,104 @@ export const Widget: React.FC<WidgetProps> = ({ usage, onReset }) => {
       ? SadCat
       : HappyCat;
 
+  const getProgressColor = (percentage: number) => {
+    if (percentage > 100) return "#ef4444"; // Red
+    if (percentage > 75) return "#f59e0b"; // Orange
+    return "#10b981"; // Green
+  };
+
+  const resetUsage = () => {
+    const newSession: TokenUsage = {
+      inputTokens: 0,
+      outputTokens: 0,
+      maxTokens: usage.maxTokens,
+      sessionStart: Date.now(),
+    };
+    chrome.storage.local.set({ currentSession: newSession });
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSessionAge(formatDuration(Date.now() - usage.sessionStart));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [usage.sessionStart]);
+
+  useEffect(() => {
+    console.log("Widget usage updated:", usage);
+  }, [usage.outputTokens]);
+
   return (
-    <div
-      className="token-tracker-float-container"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{ position: "fixed", right: 20, bottom: 20, zIndex: 999999 }}
-    >
-      <img
-        src={currentImage}
-        alt="Tokie Logo"
-        className="token-tracker-logo-float"
-        style={{
-          cursor: "pointer",
-          background: "none",
-          borderRadius: 0,
-          boxShadow: "none",
-          width: 90,
-          height: 90,
-          padding: 0,
-        }}
-      />
-      {hovered && (
-        <div
-          className="token-tracker-widget-float-details"
-          style={{
-            position: "absolute",
-            bottom: "100%" /* Position the hover window on top */,
-            right: "0" /* Fix syntax error */,
-            marginBottom:
-              "10px" /* Add some spacing between the image and the hover window */,
-            animation: "fadeIn 0.3s ease-in-out" /* Add fade-in animation */,
-          }}
-        >
-          <div className="widget-header">
-            <span className="widget-title">Token Usage</span>
-          </div>
-          <div className="widget-content">
-            <div className="progress-container">
-              <div className="progress-bar">
-                <div
-                  className="progress-fill"
-                  style={{
-                    width: `${progressPercentage}%`,
-                    backgroundColor:
-                      progressPercentage > 90
-                        ? "#ef4444"
-                        : progressPercentage > 70
-                        ? "#f59e0b"
-                        : "#10b981",
-                  }}
-                ></div>
-              </div>
-              <span className="progress-text">
-                {(usage.inputTokens + usage.outputTokens).toLocaleString()} /{" "}
-                {usage.maxTokens.toLocaleString()}
-              </span>
-            </div>
-            <div className="token-details">
-              <div className="token-row">
-                <span>Input:</span>
-                <span>{usage.inputTokens.toLocaleString()}</span>
-              </div>
-              <div className="token-row">
-                <span>Output:</span>
-                <span>{usage.outputTokens.toLocaleString()}</span>
-              </div>
-              <div className="token-row">
-                <span>Session:</span>
-                <span>{sessionAge}</span>
-              </div>
-              {usage.syncing && <div className="sync-status">Syncing...</div>}
-            </div>
-            <div className="widget-actions">
-              <button onClick={onReset}>Reset</button>
-            </div>
+    <div className="fixed right-5 bottom-5 z-[999999]">
+      <div
+        className="relative flex flex-col items-center"
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      >
+        <div className="w-24 h-4 bg-gray-200 rounded-full mb-1 relative">
+          <div
+            className="h-full rounded-full transition-all"
+            style={{
+              width: `${Math.min(progressPercentage, 100)}%`,
+              backgroundColor: getProgressColor(progressPercentage),
+            }}
+          ></div>
+          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 text-[10px] font-medium text-gray-700">
+            {Math.round(progressPercentage)}%
           </div>
         </div>
-      )}
+
+        <img
+          src={currentImage}
+          alt="Tokie Logo"
+          className="w-[90px] h-[90px] cursor-pointer"
+        />
+
+        {hovered && (
+          <div className="absolute bottom-[110%] right-0 w-60 rounded-xl shadow-lg bg-white p-4 animate-fade-in border border-gray-200 z-10">
+            <span className="text-sm font-semibold text-gray-800 mb-2 block">
+              Token Usage
+            </span>
+
+            <div className="w-20 h-20 mx-auto mb-2">
+              <CircularProgressbar
+                value={progressPercentage}
+                maxValue={100}
+                text={`${Math.round(progressPercentage)}%`}
+                styles={buildStyles({
+                  pathColor: getProgressColor(progressPercentage),
+                  textColor: "#374151",
+                  trailColor: "#e5e7eb",
+                  textSize: "16px",
+                })}
+              />
+            </div>
+
+            <div className="text-xs text-center text-gray-600 mb-1">
+              Used: {usedTokens.toLocaleString()}
+            </div>
+            <div className="text-xs text-center text-gray-600 mb-2">
+              Max: {usage.maxTokens.toLocaleString()}
+            </div>
+
+            <button
+              onClick={onReset}
+              className="w-full px-3 py-1 text-xs rounded bg-amber-400 hover:bg-amber-500 text-white font-medium"
+            >
+              Reset Usage
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
+
+function formatDuration(ms: number): string {
+  const seconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  if (hours > 0) return `${hours}h ${minutes % 60}m`;
+  if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
+  return `${seconds}s`;
+}

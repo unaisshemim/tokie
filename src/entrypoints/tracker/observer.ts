@@ -1,4 +1,4 @@
-import { countTokens, TokenUsage } from "./tokeUsage";
+import { countTokens, saveTokenUsage, TokenUsage } from "./tokeUsage";
 import { updateWidgetUI } from "./ui";
 
 export const startMessageObserver = (
@@ -26,13 +26,13 @@ export const startMessageObserver = (
     }, DEBOUNCE_DELAY);
   };
 
-  const mutationObserver = new MutationObserver((mutations) => {
+  const mutationObserver = new MutationObserver(async (mutations) => {
     for (const mutation of mutations) {
       // Track live AI response by extracting all text under <article> with assistant message
       for (const node of Array.from(mutation.addedNodes)) {
         if (node.nodeType === Node.ELEMENT_NODE) {
           const articles = (node as HTMLElement).querySelectorAll("article");
-          articles.forEach((article) => {
+          articles.forEach(async (article) => {
             // Extract assistant response
             const aiBlock = article.querySelector(
               'div[data-message-author-role="assistant"]'
@@ -51,6 +51,7 @@ export const startMessageObserver = (
               usage.inputTokens += inputToken;
               usage.totalTokens = usage.inputTokens + usage.outputTokens;
               updateWidgetUI(usage, widget);
+              await saveTokenUsage(usage);
             }
           });
         }
@@ -66,6 +67,8 @@ export const startMessageObserver = (
           );
           if (aiBlock) {
             const allText = article.innerText.trim();
+            console.log(`[Observer] AI response detected: ${allText}`);
+            // Call the function to handle AI
 
             handleAssistantUpdate(allText);
           }
@@ -75,16 +78,75 @@ export const startMessageObserver = (
           );
           if (userBlock) {
             const userText = (userBlock as HTMLElement).innerText.trim();
+            console.log(`[Observer] User input detected: ${userText}`);
             let inputToken = countTokens(userText);
             usage.inputTokens += inputToken;
             usage.totalTokens = usage.inputTokens + usage.outputTokens;
             updateWidgetUI(usage, widget);
+            await saveTokenUsage(usage);
           }
         }
       }
     }
   });
 
+  // Detect and handle the badgeSpan element
+  const badgeSpan = document.querySelector(
+    'button[data-testid="profile-button"] span'
+  );
+  if (badgeSpan) {
+    log(`[Observer] badgeSpan detected with content: ${badgeSpan.textContent}`);
+
+    // Monitor changes to the badgeSpan element
+    const badgeObserver = new MutationObserver(() => {
+      log(`[Observer] badgeSpan updated to: ${badgeSpan.textContent}`);
+      const isPlusUser = badgeSpan.textContent?.includes("PLUS");
+      if (isPlusUser) {
+        usage.planType = "plus";
+        usage.maxTokens = 128000; // Set max tokens for Plus users
+      }
+    });
+
+    badgeObserver.observe(badgeSpan, {
+      characterData: true,
+      subtree: true,
+    });
+  } else {
+    log("[Observer] badgeSpan not found!");
+  }
+
+  // Observe the parent container for the badgeSpan element
+  defineBadgeObserver();
+
+  function defineBadgeObserver() {
+    const profileButtonContainer = document.querySelector(
+      'button[data-testid="profile-button"]'
+    );
+
+    if (profileButtonContainer) {
+      const observer = new MutationObserver(() => {
+        const badgeSpan = profileButtonContainer.querySelector("span");
+        if (badgeSpan) {
+          log(
+            `[Observer] badgeSpan detected with content: ${badgeSpan.textContent}`
+          );
+          const isPlusUser = badgeSpan.textContent?.includes("PLUS");
+          if (isPlusUser) {
+            usage.planType = "plus";
+            usage.maxTokens = 128000; // Set max tokens for Plus users
+          }
+          observer.disconnect(); // Stop observing once the element is found
+        }
+      });
+
+      observer.observe(profileButtonContainer, {
+        childList: true,
+        subtree: true,
+      });
+    } else {
+      log("[Observer] Profile button container not found!");
+    }
+  }
   const chatRoot = document.querySelector("main");
   if (chatRoot) {
     mutationObserver.observe(chatRoot, {

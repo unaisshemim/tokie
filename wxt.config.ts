@@ -1,4 +1,6 @@
+import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "wxt";
+import path from "path";
 
 export default defineConfig({
   manifest: {
@@ -7,4 +9,12 @@ export default defineConfig({
   },
   srcDir: "src",
   modules: ["@wxt-dev/auto-icons"],
+  vite: () => ({
+    plugins: [tailwindcss()],
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"), // or "./src" if using src directory
+      },
+    },
+  }),
 });

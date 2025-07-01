@@ -15,9 +15,13 @@
     "postinstall": "wxt prepare"
   },
   "dependencies": {
+    "@tailwindcss/vite": "^4.1.11",
     "gpt-tokenizer": "^3.0.1",
+    "install": "^0.13.0",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-circular-progressbar": "^2.2.0",
+    "react-dom": "^19.1.0",
+    "tailwindcss": "^4.1.11"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.326",
