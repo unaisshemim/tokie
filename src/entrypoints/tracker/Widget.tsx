@@ -80,12 +80,12 @@ export const Widget: React.FC<WidgetProps> = ({ usage, onReset }) => {
   }, [usage.outputTokens]);
 
   return (
-    <div className="fixed right-5 bottom-5 z-[999999]">
-      <div
-        className="relative flex flex-col items-center"
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-      >
+    <div
+      className="fixed right-5 bottom-5 z-[999999]"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <div className="relative flex flex-col items-center">
         <div className="w-24 h-4 bg-gray-200 rounded-full mb-1 relative">
           <div
             className="h-full rounded-full transition-all"
