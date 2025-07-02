@@ -2,7 +2,7 @@
   "name": "Tokie",
   "description": "Tokie helps users track their token usage while using ChatGPT so they can avoid losing context or quality in long conversations.",
   "private": true,
-  "version": "0.0.4",
+  "version": "0.0.5",
   "type": "module",
   "scripts": {
     "dev": "wxt",
