@@ -80,12 +80,9 @@ export const Widget: React.FC<WidgetProps> = ({ usage, onReset }) => {
   }, [usage.outputTokens]);
 
   return (
-    <div
-      className="fixed right-5 bottom-5 z-[999999]"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
+    <div className="group fixed right-5 bottom-5 z-[999999]">
       <div className="relative flex flex-col items-center">
+        {/* Progress bar */}
         <div className="w-24 h-4 bg-gray-200 rounded-full mb-1 relative">
           <div
             className="h-full rounded-full transition-all"
@@ -94,52 +91,53 @@ export const Widget: React.FC<WidgetProps> = ({ usage, onReset }) => {
               backgroundColor: getProgressColor(progressPercentage),
             }}
           ></div>
+
           <div className="absolute top-0 left-1/2 transform -translate-x-1/2 text-[10px] font-medium text-gray-700">
             {Math.round(progressPercentage)}%
           </div>
         </div>
 
+        {/* Trigger Image */}
         <img
           src={currentImage}
           alt="Tokie Logo"
           className="w-[90px] h-[90px] cursor-pointer"
         />
 
-        {hovered && (
-          <div className="absolute bottom-[110%] right-0 w-60 rounded-xl shadow-lg bg-white p-4 animate-fade-in border border-gray-200 z-10">
-            <span className="text-sm font-semibold text-gray-800 mb-2 block">
-              Token Usage
-            </span>
+        {/* Hover Card */}
+        <div className="absolute bottom-full mb-2 right-0 w-60 rounded-xl shadow-lg bg-white p-4 border border-gray-200 z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+          <span className="text-sm font-semibold text-gray-800 mb-2 block">
+            Token Usage
+          </span>
 
-            <div className="w-20 h-20 mx-auto mb-2">
-              <CircularProgressbar
-                value={progressPercentage}
-                maxValue={100}
-                text={`${Math.round(progressPercentage)}%`}
-                styles={buildStyles({
-                  pathColor: getProgressColor(progressPercentage),
-                  textColor: "#374151",
-                  trailColor: "#e5e7eb",
-                  textSize: "16px",
-                })}
-              />
-            </div>
-
-            <div className="text-xs text-center text-gray-600 mb-1">
-              Used: {usedTokens.toLocaleString()}
-            </div>
-            <div className="text-xs text-center text-gray-600 mb-2">
-              Max: {usage.maxTokens.toLocaleString()}
-            </div>
-
-            <button
-              onClick={onReset}
-              className="w-full px-3 py-1 text-xs rounded bg-amber-400 hover:bg-amber-500 text-white font-medium"
-            >
-              Reset Usage
-            </button>
+          <div className="w-20 h-20 mx-auto mb-2">
+            <CircularProgressbar
+              value={progressPercentage}
+              maxValue={100}
+              text={`${Math.round(progressPercentage)}%`}
+              styles={buildStyles({
+                pathColor: getProgressColor(progressPercentage),
+                textColor: "#374151",
+                trailColor: "#e5e7eb",
+                textSize: "16px",
+              })}
+            />
           </div>
-        )}
+
+          <div className="text-xs text-center text-gray-600 mb-1">
+            Used: {usedTokens.toLocaleString()}
+          </div>
+          <div className="text-xs text-center text-gray-600 mb-2">
+            Max: {usage.maxTokens.toLocaleString()}
+          </div>
+
+          <button
+            onClick={onReset}
+            className="w-full px-3 py-1 text-xs rounded bg-amber-400 hover:bg-amber-500 text-white font-medium"
+          >
+            Reset Usage
+          </button>
+        </div>
       </div>
     </div>
   );
