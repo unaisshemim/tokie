@@ -1,6 +1,73 @@
 import { countTokens, saveTokenUsage, TokenUsage } from "./tokeUsage";
 import { updateWidgetUI } from "./ui";
 
+function setupPlanObserver(usage: TokenUsage, widget: HTMLElement) {
+  const log = console.log;
+
+  const updateUserPlan = (badgeSpan: Element | null) => {
+    const badgeContent = badgeSpan?.textContent?.toUpperCase();
+    const isPlusUser = badgeContent?.includes("PLUS");
+
+    let planChanged = false;
+    if (isPlusUser) {
+      if (usage.planType !== "plus") {
+        log("[Observer] Setting user plan to Plus.");
+        usage.planType = "plus";
+        usage.maxTokens = 128000;
+        planChanged = true;
+      }
+    } else {
+      if (usage.planType !== "free") {
+        log("[Observer] Setting user plan to Free.");
+        usage.planType = "free";
+        usage.maxTokens = 14000;
+        planChanged = true;
+      }
+    }
+
+    if (planChanged) {
+      updateWidgetUI(usage, widget);
+    }
+  };
+
+  const profileButtonSelector = 'button[data-testid="profile-button"]';
+
+  const observeBadge = (profileButton: Element) => {
+    const badgeObserver = new MutationObserver(() => {
+      const badgeSpan = profileButton.querySelector("span");
+      updateUserPlan(badgeSpan);
+    });
+
+    badgeObserver.observe(profileButton, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    });
+
+    updateUserPlan(profileButton.querySelector("span"));
+  };
+
+  const bodyObserver = new MutationObserver((mutations, observer) => {
+    const profileButton = document.querySelector(profileButtonSelector);
+    if (profileButton) {
+      log("[Observer] Profile button found.");
+      observer.disconnect();
+      observeBadge(profileButton);
+    }
+  });
+
+  const profileButton = document.querySelector(profileButtonSelector);
+  if (profileButton) {
+    observeBadge(profileButton);
+  } else {
+    log("[Observer] Profile button not found, observing body for changes.");
+    bodyObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+  }
+}
+
 export const startMessageObserver = (
   usage: TokenUsage,
   widget: HTMLElement
@@ -90,63 +157,9 @@ export const startMessageObserver = (
     }
   });
 
-  // Detect and handle the badgeSpan element
-  const badgeSpan = document.querySelector(
-    'button[data-testid="profile-button"] span'
-  );
-  if (badgeSpan) {
-    log(`[Observer] badgeSpan detected with content: ${badgeSpan.textContent}`);
-
-    // Monitor changes to the badgeSpan element
-    const badgeObserver = new MutationObserver(() => {
-      log(`[Observer] badgeSpan updated to: ${badgeSpan.textContent}`);
-      const isPlusUser = badgeSpan.textContent?.includes("PLUS");
-      if (isPlusUser) {
-        usage.planType = "plus";
-        usage.maxTokens = 128000; // Set max tokens for Plus users
-      }
-    });
-
-    badgeObserver.observe(badgeSpan, {
-      characterData: true,
-      subtree: true,
-    });
-  } else {
-    log("[Observer] badgeSpan not found!");
-  }
-
   // Observe the parent container for the badgeSpan element
-  defineBadgeObserver();
+  setupPlanObserver(usage, widget);
 
-  function defineBadgeObserver() {
-    const profileButtonContainer = document.querySelector(
-      'button[data-testid="profile-button"]'
-    );
-
-    if (profileButtonContainer) {
-      const observer = new MutationObserver(() => {
-        const badgeSpan = profileButtonContainer.querySelector("span");
-        if (badgeSpan) {
-          log(
-            `[Observer] badgeSpan detected with content: ${badgeSpan.textContent}`
-          );
-          const isPlusUser = badgeSpan.textContent?.includes("PLUS");
-          if (isPlusUser) {
-            usage.planType = "plus";
-            usage.maxTokens = 128000; // Set max tokens for Plus users
-          }
-          observer.disconnect(); // Stop observing once the element is found
-        }
-      });
-
-      observer.observe(profileButtonContainer, {
-        childList: true,
-        subtree: true,
-      });
-    } else {
-      log("[Observer] Profile button container not found!");
-    }
-  }
   const chatRoot = document.querySelector("main");
   if (chatRoot) {
     mutationObserver.observe(chatRoot, {
@@ -158,5 +171,3 @@ export const startMessageObserver = (
     log("[Observer] Chat root not found!");
   }
 };
-
-// Optionally export default or call the function elsewhere
