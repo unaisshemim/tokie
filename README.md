@@ -59,7 +59,6 @@ Whether you’re a casual user or a power user writing long prompts, Tokie helps
 To build and run the extension in development mode:
 ```bash
 npm install
-npm run dev
 ```
 
 ### Production Build
