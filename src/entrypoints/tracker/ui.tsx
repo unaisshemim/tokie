@@ -10,6 +10,7 @@ export function createWidget(usage: TokenUsage): HTMLElement {
   document.body.appendChild(container);
 
   const root = ReactDOM.createRoot(container);
+  (container as any)._reactRoot = root;
   root.render(
     <Widget
       usage={usage}
@@ -19,7 +20,14 @@ export function createWidget(usage: TokenUsage): HTMLElement {
 
   return container; // maintain compatibility with startObserver and interceptNetworkRequests
 }
+
 export function updateWidgetUI(usage: TokenUsage, widget: HTMLElement) {
-  const root = ReactDOM.createRoot(widget);
-  root.render(<Widget usage={usage} onReset={() => location.reload()} />);
+  const root = (widget as any)._reactRoot;
+  if (root) {
+    root.render(<Widget usage={usage} onReset={() => location.reload()} />);
+  } else {
+    const newRoot = ReactDOM.createRoot(widget);
+    (widget as any)._reactRoot = newRoot;
+    newRoot.render(<Widget usage={usage} onReset={() => location.reload()} />);
+  }
 }
