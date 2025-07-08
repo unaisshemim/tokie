@@ -83,3 +83,10 @@ Pull requests are welcome! Have an idea to improve Tokie? Open an issue or start
 
 ## 📄 <span style="color:#FF9800">License</span>
 [MIT](LICENSE)
+
+---
+
+## ☕ <span style="color:#FF9800">Buy Me a Coffee</span>
+If you find Tokie helpful and want to support its development, consider buying me a coffee:
+
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-FFDD00?style=flat&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/69bckhiudr)
