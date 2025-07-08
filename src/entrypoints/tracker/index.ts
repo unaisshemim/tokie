@@ -7,17 +7,19 @@ function waitForFirstUserInput(): Promise<HTMLElement> {
   return new Promise((resolve) => {
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
-        const elements = Array.from(
-          (mutation.target as HTMLElement).querySelectorAll(
-            '[data-message-author-role="user"]'
-          )
-        );
+        if (mutation.target instanceof Element) {
+          const elements = Array.from(
+            mutation.target.querySelectorAll(
+              '[data-message-author-role="user"]'
+            )
+          );
 
-        for (const el of elements) {
-          if (el.textContent?.trim()) {
-            observer.disconnect();
-            resolve(el as HTMLElement);
-            return;
+          for (const el of elements) {
+            if (el.textContent?.trim()) {
+              observer.disconnect();
+              resolve(el as HTMLElement);
+              return;
+            }
           }
         }
       }

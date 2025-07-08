@@ -74,6 +74,93 @@ export const startMessageObserver = (
 ) => {
   const log = console.log;
 
+  // Cache the last widget state
+  let lastWidgetState = {
+    inputTokens: usage.inputTokens,
+    outputTokens: usage.outputTokens,
+    maxTokens: usage.maxTokens,
+    planType: usage.planType,
+  };
+
+  // Debounce for widget update
+  let widgetUpdateTimer: ReturnType<typeof setTimeout> | null = null;
+  const WIDGET_UPDATE_DEBOUNCE = 400; // ms
+
+  function safeUpdateWidgetUI() {
+    const changed =
+      usage.inputTokens !== lastWidgetState.inputTokens ||
+      usage.outputTokens !== lastWidgetState.outputTokens ||
+      usage.maxTokens !== lastWidgetState.maxTokens ||
+      usage.planType !== lastWidgetState.planType;
+    if (changed) {
+      if (widgetUpdateTimer) clearTimeout(widgetUpdateTimer);
+      widgetUpdateTimer = setTimeout(() => {
+        updateWidgetUI(usage, widget);
+        lastWidgetState = {
+          inputTokens: usage.inputTokens,
+          outputTokens: usage.outputTokens,
+          maxTokens: usage.maxTokens,
+          planType: usage.planType,
+        };
+      }, WIDGET_UPDATE_DEBOUNCE);
+    }
+  }
+
+  // Function to count all tokens and update the widget
+  function countAllTokensAndUpdate() {
+    const articles = document.querySelectorAll("article");
+    let initialInputTokens = 0;
+    let initialOutputTokens = 0;
+    articles.forEach((article, idx) => {
+      // All user blocks inside the article
+      const userBlocks = article.querySelectorAll('div[data-message-author-role="user"]');
+      userBlocks.forEach((userBlock) => {
+        const userText = (userBlock as HTMLElement).innerText.trim();
+        initialInputTokens += countTokens(userText);
+      });
+      // All assistant blocks inside the article
+      const aiBlocks = article.querySelectorAll('div[data-message-author-role="assistant"]');
+      aiBlocks.forEach((aiBlock) => {
+        const aiText = (aiBlock as HTMLElement).innerText.trim();
+        initialOutputTokens += countTokens(aiText);
+      });
+    });
+    usage.inputTokens = initialInputTokens;
+    usage.outputTokens = initialOutputTokens;
+    usage.totalTokens = usage.inputTokens + usage.outputTokens;
+    safeUpdateWidgetUI();
+    saveTokenUsage(usage);
+    console.log(`[Tokie] Tokens totais após contagem inicial:`, usage);
+  }
+
+  // Wait for the DOM to contain at least one <article> before running the initial count
+  function waitForArticlesAndCount() {
+    if (document.querySelectorAll('article').length > 0) {
+      setTimeout(countAllTokensAndUpdate, 300); // Aguarda mais um pouco para garantir renderização
+      return;
+    }
+    const observer = new MutationObserver(() => {
+      if (document.querySelectorAll('article').length > 0) {
+        observer.disconnect();
+        setTimeout(countAllTokensAndUpdate, 300);
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+
+  // Run the initial count
+  waitForArticlesAndCount();
+
+  // Detect chat/conversation change by URL change (SPA navigation)
+  let lastPath = window.location.pathname;
+  setInterval(() => {
+    if (window.location.pathname !== lastPath) {
+      lastPath = window.location.pathname;
+      waitForArticlesAndCount();
+      console.log('[Tokie] Detecção de troca de chat/conversa, recarregando contagem de tokens.');
+    }
+  }, 800);
+
   // Debounced AI response buffer logic
   let buffer = "";
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -88,7 +175,7 @@ export const startMessageObserver = (
       let outPutToken = countTokens(buffer);
       usage.outputTokens += outPutToken;
       usage.totalTokens = usage.inputTokens + usage.outputTokens;
-      updateWidgetUI(usage, widget);
+      safeUpdateWidgetUI();
       buffer = "";
     }, DEBOUNCE_DELAY);
   };
@@ -117,7 +204,7 @@ export const startMessageObserver = (
               let inputToken = countTokens(userText);
               usage.inputTokens += inputToken;
               usage.totalTokens = usage.inputTokens + usage.outputTokens;
-              updateWidgetUI(usage, widget);
+              safeUpdateWidgetUI();
               await saveTokenUsage(usage);
             }
           });
@@ -149,7 +236,7 @@ export const startMessageObserver = (
             let inputToken = countTokens(userText);
             usage.inputTokens += inputToken;
             usage.totalTokens = usage.inputTokens + usage.outputTokens;
-            updateWidgetUI(usage, widget);
+            safeUpdateWidgetUI();
             await saveTokenUsage(usage);
           }
         }
