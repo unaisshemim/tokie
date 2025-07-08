@@ -9,6 +9,12 @@
   <strong style="color:#FF9800">you ran out of tokens.</strong></em>
 </p>
 
+<p align="center">
+  <a href="https://chromewebstore.google.com/detail/tokie/aegmlcmdhpokpgpbbmgdllifocodbbao">
+    <img src="https://img.shields.io/chrome-web-store/v/aegmlcmdhpokpgpbbmgdllifocodbbao?style=flat&logo=google-chrome&logoColor=white&label=Chrome%20Web%20Store" alt="Chrome Web Store" />
+  </a>
+</p>
+
 ---
 
 ## 🧩 <span style="color:#2196F3">The Problem</span>
@@ -79,10 +85,6 @@ npm run build
 ## 🤝 <span style="color:#2196F3">Contribute</span>
 Pull requests are welcome! Have an idea to improve Tokie? Open an issue or start a discussion.
 
----
-
-## 📄 <span style="color:#FF9800">License</span>
-[MIT](LICENSE)
 
 ---
 
