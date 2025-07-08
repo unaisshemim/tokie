@@ -11,7 +11,13 @@
 
 <p align="center">
   <a href="https://chromewebstore.google.com/detail/tokie/aegmlcmdhpokpgpbbmgdllifocodbbao">
-    <img src="https://img.shields.io/chrome-web-store/v/aegmlcmdhpokpgpbbmgdllifocodbbao?style=flat&logo=google-chrome&logoColor=white&label=Chrome%20Web%20Store" alt="Chrome Web Store" />
+    <img src="https://img.shields.io/badge/🎯_Install_Now-Chrome_Web_Store-4285F4?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Install from Chrome Web Store" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://chromewebstore.google.com/detail/tokie/aegmlcmdhpokpgpbbmgdllifocodbbao">
+    <img src="https://img.shields.io/chrome-web-store/users/aegmlcmdhpokpgpbbmgdllifocodbbao?style=for-the-badge&logo=google-chrome&logoColor=white&label=Users&labelColor=4285F4&color=green" alt="Chrome Web Store Users" />
   </a>
 </p>
 
