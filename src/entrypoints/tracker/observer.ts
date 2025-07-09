@@ -13,7 +13,7 @@ function setupPlanObserver(usage: TokenUsage, widget: HTMLElement) {
       if (usage.planType !== "plus") {
         log("[Observer] Setting user plan to Plus.");
         usage.planType = "plus";
-        usage.maxTokens = 128000;
+        usage.maxTokens = 32000;
         planChanged = true;
       }
     } else {
@@ -113,13 +113,17 @@ export const startMessageObserver = (
     let initialOutputTokens = 0;
     articles.forEach((article, idx) => {
       // All user blocks inside the article
-      const userBlocks = article.querySelectorAll('div[data-message-author-role="user"]');
+      const userBlocks = article.querySelectorAll(
+        'div[data-message-author-role="user"]'
+      );
       userBlocks.forEach((userBlock) => {
         const userText = (userBlock as HTMLElement).innerText.trim();
         initialInputTokens += countTokens(userText);
       });
       // All assistant blocks inside the article
-      const aiBlocks = article.querySelectorAll('div[data-message-author-role="assistant"]');
+      const aiBlocks = article.querySelectorAll(
+        'div[data-message-author-role="assistant"]'
+      );
       aiBlocks.forEach((aiBlock) => {
         const aiText = (aiBlock as HTMLElement).innerText.trim();
         initialOutputTokens += countTokens(aiText);
@@ -135,12 +139,12 @@ export const startMessageObserver = (
 
   // Wait for the DOM to contain at least one <article> before running the initial count
   function waitForArticlesAndCount() {
-    if (document.querySelectorAll('article').length > 0) {
+    if (document.querySelectorAll("article").length > 0) {
       setTimeout(countAllTokensAndUpdate, 300); // Aguarda mais um pouco para garantir renderização
       return;
     }
     const observer = new MutationObserver(() => {
-      if (document.querySelectorAll('article').length > 0) {
+      if (document.querySelectorAll("article").length > 0) {
         observer.disconnect();
         setTimeout(countAllTokensAndUpdate, 300);
       }
@@ -157,7 +161,9 @@ export const startMessageObserver = (
     if (window.location.pathname !== lastPath) {
       lastPath = window.location.pathname;
       waitForArticlesAndCount();
-      console.log('[Tokie] Detecção de troca de chat/conversa, recarregando contagem de tokens.');
+      console.log(
+        "[Tokie] Detecção de troca de chat/conversa, recarregando contagem de tokens."
+      );
     }
   }, 800);
 

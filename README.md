@@ -24,7 +24,7 @@
 ---
 
 ## 🧩 <span style="color:#2196F3">The Problem</span>
-ChatGPT has a limit on how much it can "remember" in a single conversation. It’s not about how long the chat looks — it’s about tokens. Tokens are chunks of words, and once a session reaches the limit (like 128,000 tokens for GPT-4), things start breaking:
+ChatGPT has a limit on how much it can "remember" in a single conversation. It’s not about how long the chat looks — it’s about tokens. Tokens are chunks of words, and once a session reaches the limit (like 32000 tokens for GPT-4), things start breaking:
 
 - ❌ <span style="color:#F44336">It stops remembering earlier parts of your chat.</span>
 - ❌ <span style="color:#F44336">Answers get confusing or off-topic.</span>
@@ -55,8 +55,8 @@ Whether you’re a casual user or a power user writing long prompts, Tokie helps
 | Model               | Token Limit      | Approx. Word Count |
 |---------------------|------------------|---------------------|
 | Free GPT-3.5        | ~16K tokens      | ~12K words          |
-| GPT-4 (Free/Plus)   | ~128K tokens     | ~96K words          |
-| GPT-4.1 (Plus/Pro)  | Up to 1M tokens  | ~750K words         |
+| GPT-4 (Free/Plus)   | ~32K tokens     | ~24K words          |
+| GPT-4.1 (Plus/Pro)  | Up to 128K tokens  | ~24K words         |
 
 ---
 
