@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, JSX } from "react";
 import HappyCat from "../../assets/happyCat.png";
 import SadCat from "../../assets/sadCat.png";
 import SleepingCat from "../../assets/sleepingCat.png";
@@ -17,19 +17,41 @@ interface WidgetProps {
   onReset: () => void;
 }
 
-const defaultUsage: TokenUsage = {
-  inputTokens: 0,
-  outputTokens: 0,
-  maxTokens: 10000,
-  sessionStart: Date.now(),
+type FloatingType = "heart" | "bubble" | "smoke";
+
+const FloatingEffect = ({ type }: { type: FloatingType }) => {
+  const content = type === "heart" ? "❤️" : type === "bubble" ? "🫧" : "💨";
+
+  // Randomize horizontal position and animation duration
+  const leftOffset = Math.floor(Math.random() * 60) + 20; // 20–80%
+  const animationDuration = Math.random() * 1.5 + 1.5; // 1.5s–3s
+
+  return (
+    <span
+      className="floating-heart absolute text-xl"
+      style={{
+        left: `${leftOffset}%`,
+        animationDuration: `${animationDuration}s`,
+      }}
+    >
+      {content}
+    </span>
+  );
+};
+const getFloatingType = (percentage: number): FloatingType => {
+  if (percentage >= 100) return "smoke";
+  if (percentage >= 50) return "bubble";
+  return "heart";
 };
 
 export const Widget: React.FC<WidgetProps> = ({ usage, onReset }) => {
   // const [currentUsage, setCurrentUsage] = useState<TokenUsage>(defaultUsage);
-  const [hovered, setHovered] = useState(false);
+
   const [sessionAge, setSessionAge] = useState(
     formatDuration(Date.now() - usage.sessionStart)
   );
+
+  const [floatingItems, setFloatingItems] = useState<JSX.Element[]>([]);
 
   // 🟡 Live update time display
   useEffect(() => {
@@ -58,16 +80,6 @@ export const Widget: React.FC<WidgetProps> = ({ usage, onReset }) => {
     return "#10b981"; // Green
   };
 
-  const resetUsage = () => {
-    const newSession: TokenUsage = {
-      inputTokens: 0,
-      outputTokens: 0,
-      maxTokens: usage.maxTokens,
-      sessionStart: Date.now(),
-    };
-    chrome.storage.local.set({ currentSession: newSession });
-  };
-
   useEffect(() => {
     const interval = setInterval(() => {
       setSessionAge(formatDuration(Date.now() - usage.sessionStart));
@@ -78,6 +90,18 @@ export const Widget: React.FC<WidgetProps> = ({ usage, onReset }) => {
   useEffect(() => {
     console.log("Widget usage updated:", usage);
   }, [usage.outputTokens]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const type = getFloatingType(progressPercentage);
+      console.log("type:" + type);
+      const batch = Array.from({ length: Math.floor(Math.random() * 2) + 2 }) // 2–3
+        .map(() => <FloatingEffect key={Math.random()} type={type} />);
+      setFloatingItems((prev) => [...prev.slice(-10), ...batch]);
+    }, 1200);
+
+    return () => clearInterval(interval);
+  }, [progressPercentage]);
 
   return (
     <div className="group fixed right-5 bottom-5 z-[999999]">
@@ -103,6 +127,7 @@ export const Widget: React.FC<WidgetProps> = ({ usage, onReset }) => {
           alt="Tokie Logo"
           className="w-[90px] h-[90px] cursor-pointer"
         />
+        {floatingItems}
 
         {/* Hover Card */}
         <div className="absolute bottom-full mb-2 right-0 w-60 rounded-xl shadow-lg bg-white p-4 border border-gray-200 z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">

@@ -9,8 +9,15 @@ export default defineConfig({
   },
   srcDir: "src",
   modules: ["@wxt-dev/auto-icons"],
+
   vite: () => ({
+    json: {
+      stringify: true,
+    },
     plugins: [tailwindcss()],
+    build: {
+      target: "esnext", // ensure Web Animation API compatibility
+    },
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"), // or "./src" if using src directory
