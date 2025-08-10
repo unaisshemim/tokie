@@ -19,31 +19,6 @@ interface WidgetProps {
 
 type FloatingType = "heart" | "bubble" | "smoke";
 
-const FloatingEffect = ({ type }: { type: FloatingType }) => {
-  const content = type === "heart" ? "❤️" : type === "bubble" ? "🫧" : "💨";
-
-  // Randomize horizontal position and animation duration
-  const leftOffset = Math.floor(Math.random() * 60) + 20; // 20–80%
-  const animationDuration = Math.random() * 1.5 + 1.5; // 1.5s–3s
-
-  return (
-    <span
-      className="floating-heart absolute text-xl"
-      style={{
-        left: `${leftOffset}%`,
-        animationDuration: `${animationDuration}s`,
-      }}
-    >
-      {content}
-    </span>
-  );
-};
-const getFloatingType = (percentage: number): FloatingType => {
-  if (percentage >= 100) return "smoke";
-  if (percentage >= 50) return "bubble";
-  return "heart";
-};
-
 export const Widget: React.FC<WidgetProps> = ({ usage, onReset }) => {
   // const [currentUsage, setCurrentUsage] = useState<TokenUsage>(defaultUsage);
 
@@ -90,18 +65,6 @@ export const Widget: React.FC<WidgetProps> = ({ usage, onReset }) => {
   useEffect(() => {
     console.log("Widget usage updated:", usage);
   }, [usage.outputTokens]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const type = getFloatingType(progressPercentage);
-      console.log("type:" + type);
-      const batch = Array.from({ length: Math.floor(Math.random() * 2) + 2 }) // 2–3
-        .map(() => <FloatingEffect key={Math.random()} type={type} />);
-      setFloatingItems((prev) => [...prev.slice(-10), ...batch]);
-    }, 1200);
-
-    return () => clearInterval(interval);
-  }, [progressPercentage]);
 
   return (
     <div className="group fixed right-5 bottom-5 z-[999999]">

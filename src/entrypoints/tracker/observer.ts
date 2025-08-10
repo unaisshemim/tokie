@@ -7,6 +7,7 @@ function setupPlanObserver(usage: TokenUsage, widget: HTMLElement) {
   const updateUserPlan = (badgeSpan: Element | null) => {
     const badgeContent = badgeSpan?.textContent?.toUpperCase();
     const isPlusUser = badgeContent?.includes("PLUS");
+    console.log("[Observer] User plan detected:", badgeContent);
 
     let planChanged = false;
     if (isPlusUser) {
@@ -30,12 +31,12 @@ function setupPlanObserver(usage: TokenUsage, widget: HTMLElement) {
     }
   };
 
-  const profileButtonSelector = 'button[data-testid="profile-button"]';
+  const profileButtonSelector = '[data-testid="accounts-profile-button"]';
 
   const observeBadge = (profileButton: Element) => {
     const badgeObserver = new MutationObserver(() => {
-      const badgeSpan = profileButton.querySelector("span");
-      updateUserPlan(badgeSpan);
+      const badgeDiv = profileButton.querySelector("div.text-xs div.truncate");
+      updateUserPlan(badgeDiv);
     });
 
     badgeObserver.observe(profileButton, {
@@ -44,13 +45,16 @@ function setupPlanObserver(usage: TokenUsage, widget: HTMLElement) {
       characterData: true,
     });
 
-    updateUserPlan(profileButton.querySelector("span"));
+    const badgeDiv = profileButton.querySelector("div.text-xs div.truncate");
+    updateUserPlan(badgeDiv); // ✅ correct selector
   };
 
   const bodyObserver = new MutationObserver((mutations, observer) => {
     const profileButton = document.querySelector(profileButtonSelector);
+
     if (profileButton) {
       log("[Observer] Profile button found.");
+
       observer.disconnect();
       observeBadge(profileButton);
     }
@@ -134,7 +138,6 @@ export const startMessageObserver = (
     usage.totalTokens = usage.inputTokens + usage.outputTokens;
     safeUpdateWidgetUI();
     saveTokenUsage(usage);
-    console.log(`[Tokie] Tokens totais após contagem inicial:`, usage);
   }
 
   // Wait for the DOM to contain at least one <article> before running the initial count
@@ -161,9 +164,6 @@ export const startMessageObserver = (
     if (window.location.pathname !== lastPath) {
       lastPath = window.location.pathname;
       waitForArticlesAndCount();
-      console.log(
-        "[Tokie] Detecção de troca de chat/conversa, recarregando contagem de tokens."
-      );
     }
   }, 800);
 
@@ -227,7 +227,7 @@ export const startMessageObserver = (
           );
           if (aiBlock) {
             const allText = article.innerText.trim();
-            console.log(`[Observer] AI response detected: ${allText}`);
+
             // Call the function to handle AI
 
             handleAssistantUpdate(allText);
@@ -238,7 +238,6 @@ export const startMessageObserver = (
           );
           if (userBlock) {
             const userText = (userBlock as HTMLElement).innerText.trim();
-            console.log(`[Observer] User input detected: ${userText}`);
             let inputToken = countTokens(userText);
             usage.inputTokens += inputToken;
             usage.totalTokens = usage.inputTokens + usage.outputTokens;
