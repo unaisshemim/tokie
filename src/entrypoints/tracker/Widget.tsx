@@ -62,9 +62,7 @@ export const Widget: React.FC<WidgetProps> = ({ usage, onReset }) => {
     return () => clearInterval(interval);
   }, [usage.sessionStart]);
 
-  useEffect(() => {
-    console.log("Widget usage updated:", usage);
-  }, [usage.outputTokens]);
+  useEffect(() => {}, [usage.outputTokens]);
 
   return (
     <div className="group fixed right-5 bottom-5 z-[999999]">

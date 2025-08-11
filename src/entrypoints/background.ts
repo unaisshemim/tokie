@@ -1,3 +1,1 @@
-export default defineBackground(() => {
-  console.log("[tracker] Background script initialized");
-});
+export default defineBackground(() => {});

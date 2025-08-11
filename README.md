@@ -1,5 +1,17 @@
 <p align="center">
-  <img src="src/assets/happyCat.png" alt="Tokie Logo" width="200" />
+  <img## 🧩 <span style="color:#2196F3">The Problem</span>
+ChatGPT has a limit on how much it can "remember" in a single conversation. It's not about how long the chat looks — it's about tokens. Tokens are chunks of words, and once a session reaches the limit, things start breaking:
+
+- ❌ <span style="color:#F44336">It stops remembering earlier parts of your chat.</span>
+- ❌ <span style="color:#F44336">Answers get confusing or off-topic.</span>
+- ❌ <span style="color:#F44336">You lose context, continuity, and quality.</span>
+
+**Current GPT-5 Context Window Limits (August 2025):**
+- **Free Tier**: 8,000 tokens per conversation
+- **Plus Tier**: 32,000 tokens per conversation
+
+The problem?
+You never know when you're about to hit that limit./assets/happyCat.png" alt="Tokie Logo" width="200" />
 </p>
 
 <h1 align="center">🧠 <span style="color:#4CAF50">Tokie</span> — <span style="color:#FF5722">Know When ChatGPT Is Reaching Its Limit</span></h1>
@@ -47,16 +59,29 @@ Whether you’re a casual user or a power user writing long prompts, Tokie helps
 - 🧮 **<span style="color:#4CAF50">Live Token Tracker</span>**: Displays how many tokens you've used in your current session.
 - 💬 **<span style="color:#2196F3">Session-Aware</span>**: Tracks usage per conversation window.
 - 🧷 **<span style="color:#FF5722">Overlay Widget</span>**: Floating progress bar that lives on your ChatGPT screen.
-- 🧠 **<span style="color:#9C27B0">Network Smart</span>**: Intercepts ChatGPT traffic and intelligently calculates token usage, even for streamed responses.
-- 🧪 **<span style="color:#FFC107">Accurate & Transparent</span>**: Know the limits. Plan your prompts. Never be surprised again.
+- 🔍 **<span style="color:#9C27B0">Plan Detection</span>**: Automatically detects Free vs Plus accounts and adjusts limits accordingly.
+- 🧠 **<span style="color:#607D8B">Network Smart</span>**: Intercepts ChatGPT traffic and intelligently calculates token usage, even for streamed responses.
+- 🧪 **<span style="color:#FFC107">Accurate & Transparent</span>**: Know your limits (8K for Free, 32K for Plus). Plan your prompts. Never be surprised again.
 
 ---
-## 📊 <span style="color:#4CAF50">Token Limits Table</span>
-| Model               | Token Limit      | Approx. Word Count |
-|---------------------|------------------|---------------------|
-| Free GPT-3.5        | ~16K tokens      | ~12K words          |
-| GPT-4 (Free/Plus)   | ~32K tokens     | ~24K words          |
-| GPT-4.1 (Plus/Pro)  | Up to 128K tokens  | ~24K words         |
+## 📊 <span style="color:#4CAF50">GPT-5 Context Window Limits</span>
+
+The context window—how much information the model can process at once—is determined by your ChatGPT subscription tier:
+
+| **Tier** | **Context Window Limit** | **Approx. Word Count** | **Description** |
+|----------|---------------------------|-------------------------|------------------|
+| **Free** | 8,000 tokens | ~6,000 words | Limited history retention; larger documents must be split |
+| **Plus** | 32,000 tokens | ~24,000 words | Longer interactions, better continuity, larger file uploads |
+| **Pro/Team/Enterprise** | 128,000+ tokens | ~96,000+ words | Extended workflows, enterprise features |
+| **API Access** | Up to 400,000 tokens | ~300,000+ words | Developer access with maximum flexibility |
+
+### Key Considerations
+- **Free Tier**: Your conversation is limited to 8,000 tokens, affecting how much history can be retained in a session
+- **Plus Tier**: Significantly larger 32,000-token window enables longer interactions and better chat continuity
+- **Performance**: ChatGPT performs best when staying well below the hard token limit
+- **Higher Tiers**: Pro, Team, and Enterprise subscriptions offer even higher limits for demanding workflows
+
+*Note: These limits are for GPT-5 in the ChatGPT consumer interface as of August 2025*
 
 ---
 

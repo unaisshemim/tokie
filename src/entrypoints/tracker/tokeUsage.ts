@@ -50,7 +50,6 @@ export async function loadTokenUsage(sessionId: string): Promise<TokenUsage> {
     tokenUsage: sessions,
     currentSession: usage,
   });
-  console.log("load token usage", usage);
 
   return usage;
 }

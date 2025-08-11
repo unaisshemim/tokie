@@ -7,7 +7,6 @@ function setupPlanObserver(usage: TokenUsage, widget: HTMLElement) {
   const updateUserPlan = (badgeSpan: Element | null) => {
     const badgeContent = badgeSpan?.textContent?.toUpperCase();
     const isPlusUser = badgeContent?.includes("PLUS");
-    console.log("[Observer] User plan detected:", badgeContent);
 
     let planChanged = false;
     if (isPlusUser) {
@@ -21,7 +20,7 @@ function setupPlanObserver(usage: TokenUsage, widget: HTMLElement) {
       if (usage.planType !== "free") {
         log("[Observer] Setting user plan to Free.");
         usage.planType = "free";
-        usage.maxTokens = 14000;
+        usage.maxTokens = 8000;
         planChanged = true;
       }
     }
@@ -31,45 +30,65 @@ function setupPlanObserver(usage: TokenUsage, widget: HTMLElement) {
     }
   };
 
-  const profileButtonSelector = '[data-testid="accounts-profile-button"]';
+  // Look for the plan badge in the sidebar bottom section
+  const findPlanBadge = () => {
+    // Try multiple selectors to find the plan badge
+    let badgeElement = null;
 
-  const observeBadge = (profileButton: Element) => {
-    const badgeObserver = new MutationObserver(() => {
-      const badgeDiv = profileButton.querySelector("div.text-xs div.truncate");
-      updateUserPlan(badgeDiv);
-    });
+    // First, try to find it in the sidebar bottom area
+    const sidebarBottom = document.querySelector(".sticky.bottom-0");
+    if (sidebarBottom) {
+      badgeElement = sidebarBottom.querySelector(".text-xs .truncate");
+    }
 
-    badgeObserver.observe(profileButton, {
+    // If not found, search globally for any element with "Plus" text
+    if (!badgeElement) {
+      const allElements = document.querySelectorAll("*");
+      for (const element of allElements) {
+        const text = element.textContent?.trim();
+        if (text === "Plus" || text === "plus") {
+          badgeElement = element;
+
+          break;
+        }
+      }
+    }
+
+    return badgeElement;
+  };
+
+  const observePlanChanges = () => {
+    const badgeElement = findPlanBadge();
+    updateUserPlan(badgeElement);
+  };
+
+  // Set up a mutation observer to watch for sidebar changes
+  const sidebarObserver = new MutationObserver(() => {
+    observePlanChanges();
+  });
+
+  // Observe the entire sidebar for changes
+  const sidebar =
+    document.querySelector('[data-testid*="sidebar"]') ||
+    document.querySelector(".sidebar") ||
+    document.querySelector("nav") ||
+    document.body;
+
+  if (sidebar) {
+    sidebarObserver.observe(sidebar, {
       childList: true,
       subtree: true,
       characterData: true,
     });
-
-    const badgeDiv = profileButton.querySelector("div.text-xs div.truncate");
-    updateUserPlan(badgeDiv); // ✅ correct selector
-  };
-
-  const bodyObserver = new MutationObserver((mutations, observer) => {
-    const profileButton = document.querySelector(profileButtonSelector);
-
-    if (profileButton) {
-      log("[Observer] Profile button found.");
-
-      observer.disconnect();
-      observeBadge(profileButton);
-    }
-  });
-
-  const profileButton = document.querySelector(profileButtonSelector);
-  if (profileButton) {
-    observeBadge(profileButton);
-  } else {
-    log("[Observer] Profile button not found, observing body for changes.");
-    bodyObserver.observe(document.body, {
-      childList: true,
-      subtree: true,
-    });
   }
+
+  // Initial check
+  setTimeout(() => {
+    observePlanChanges();
+  }, 1000); // Give time for the sidebar to load
+
+  // Also check periodically in case we miss mutations
+  setInterval(observePlanChanges, 5000);
 }
 
 export const startMessageObserver = (
