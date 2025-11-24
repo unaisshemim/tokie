@@ -5,7 +5,12 @@ import path from "path";
 export default defineConfig({
   manifest: {
     permissions: ["storage"],
-    host_permissions: ["https://chatgpt.com/*", "https://chat.openai.com/*"],
+    host_permissions: [
+      "https://chatgpt.com/*",
+      "https://chat.openai.com/*",
+      "https://claude.ai/*",
+      "https://*.claude.ai/*",
+    ],
   },
   srcDir: "src",
   modules: ["@wxt-dev/auto-icons"],

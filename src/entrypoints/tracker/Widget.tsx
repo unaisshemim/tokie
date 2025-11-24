@@ -1,16 +1,22 @@
-import React, { useState, useEffect, useRef, JSX } from "react";
+import React, { useState, useEffect, JSX } from "react";
 import HappyCat from "../../assets/happyCat.png";
 import SadCat from "../../assets/sadCat.png";
 import SleepingCat from "../../assets/sleepingCat.png";
 import "@/assets/tailwind.css";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
+import { RateLimitInfo, formatTimeUntilReset } from "./rateLimits";
 
 interface TokenUsage {
   inputTokens: number;
   outputTokens: number;
   maxTokens: number;
   sessionStart: number;
+  planType?: "free" | "plus" | "pro";
+  rateLimit?: RateLimitInfo;
+  isDowngraded?: boolean;
+  actualModel?: string;
+  displayedModel?: string;
 }
 interface WidgetProps {
   usage: TokenUsage;
@@ -42,14 +48,19 @@ export const Widget: React.FC<WidgetProps> = ({ usage, onReset }) => {
     150
   );
 
-  const currentImage =
-    progressPercentage >= 100
-      ? SleepingCat
-      : progressPercentage >= 50
-      ? SadCat
-      : HappyCat;
+  // Update image based on token usage and rate limit status
+  const getCurrentImage = () => {
+    if (usage.isDowngraded) return SadCat;
+    if (usage.rateLimit?.isExceeded) return SadCat;
+    if (progressPercentage >= 100) return SleepingCat;
+    if (progressPercentage >= 50) return SadCat;
+    return HappyCat;
+  };
+
+  const currentImage = getCurrentImage();
 
   const getProgressColor = (percentage: number) => {
+    if (usage.isDowngraded || usage.rateLimit?.isExceeded) return "#ef4444"; // Red for downgrade/rate limit
     if (percentage > 100) return "#ef4444"; // Red
     if (percentage > 75) return "#f59e0b"; // Orange
     return "#10b981"; // Green
@@ -116,6 +127,53 @@ export const Widget: React.FC<WidgetProps> = ({ usage, onReset }) => {
           <div className="text-xs text-center text-gray-600 mb-2">
             Max: {usage.maxTokens.toLocaleString()}
           </div>
+
+          {/* Plan Type Display */}
+          {usage.planType && (
+            <div className="text-[10px] text-center text-gray-500 mb-2">
+              Plan:{" "}
+              <span className="font-semibold capitalize">{usage.planType}</span>
+            </div>
+          )}
+
+          {/* Model Downgrade Warning */}
+          {usage.isDowngraded && (
+            <div className="mb-2 p-2 bg-orange-50 border border-orange-200 rounded text-[10px]">
+              <div className="font-semibold text-orange-800 mb-1">
+                ⚠️ Model Downgraded
+              </div>
+              <div className="text-orange-700">
+                {usage.displayedModel && (
+                  <div>Showing: {usage.displayedModel}</div>
+                )}
+                {usage.actualModel && (
+                  <div>Actually using: {usage.actualModel}</div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Rate Limit Status */}
+          {usage.rateLimit && (
+            <div className="mb-2 p-2 bg-blue-50 border border-blue-200 rounded text-[10px]">
+              <div className="font-semibold text-blue-800 mb-1">Rate Limit</div>
+              <div className="text-blue-700">
+                <div>
+                  Messages: {usage.rateLimit.used} / {usage.rateLimit.limit}
+                </div>
+                <div>Remaining: {usage.rateLimit.remaining}</div>
+                {usage.rateLimit.isExceeded ? (
+                  <div className="text-red-600 font-semibold mt-1">
+                    Limit exceeded
+                  </div>
+                ) : (
+                  <div className="text-gray-600 mt-1">
+                    Resets in: {formatTimeUntilReset(usage.rateLimit.resetTime)}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           <button
             onClick={onReset}

@@ -52,20 +52,21 @@ Whether you’re a casual user or a power user writing long prompts, Tokie helps
 
 ---
 
-## 📊 <span style="color:#4CAF50">GPT-5 Context Window Limits (August 2025)</span>
+## 📊 <span style="color:#4CAF50">GPT-5.1 Context Window Limits (November 2025)</span>
 
 The **context window** is how much information ChatGPT can process at once. Once you pass the limit, it starts forgetting earlier messages.
 
 | Tier             | Token Limit        | Approx. Word Count | Notes |
 |------------------|--------------------|--------------------|-------|
-| Free             | ~8,000 tokens      | ~6,000 words       | Shorter sessions; large inputs may need summarizing or splitting. |
+| Free             | ~16,000 tokens     | ~12,000 words      | Shorter sessions; large inputs may need summarizing or splitting. |
 | Plus             | ~32,000 tokens     | ~24,000 words      | Great for longer chats and bigger uploads, but still capped below Pro/Enterprise. |
-| Pro / Enterprise | 128,000+ tokens    | 96,000+ words      | API access can reach up to 400,000 tokens per request. |
+| Pro / Enterprise | 128,000-256,000 tokens | 96,000-192,000 words | GPT-5.1 supports larger context windows. API access can reach up to 272,000 input + 128,000 output tokens per request. |
 
 **Key Takeaways:**
-- Free users hit the wall fast with longer projects.
-- Plus offers 4× the space, ideal for heavy research or extended creative work.
-- For truly massive contexts, you’ll need Pro, Enterprise, or API access.
+- Free tier provides ~16,000 tokens (~12,000 words) — double the previous limit.
+- Plus offers 2× the space of Free, ideal for heavy research or extended creative work.
+- Pro/Enterprise with GPT-5.1 supports 128K-256K context windows for truly massive contexts.
+- API access supports up to 272,000 input tokens and 128,000 output tokens per request.
 
 ---
 

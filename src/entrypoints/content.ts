@@ -1,12 +1,8 @@
 import initTokenTracker from "./tracker";
+import { getSessionId } from "./tracker/tokeUsage";
 
 let lastSessionId: string | null = null;
 let trackerInitialized = false;
-
-function getSessionId() {
-  const match = window.location.pathname.match(/\/c\/([a-z0-9-]+)/i);
-  return match ? match[1] : null;
-}
 
 function startOrUpdateTracker() {
   const currentSessionId = getSessionId();
@@ -20,7 +16,12 @@ function startOrUpdateTracker() {
 }
 
 export default defineContentScript({
-  matches: ["https://chat.openai.com/*", "https://chatgpt.com/*"],
+  matches: [
+    "https://chat.openai.com/*",
+    "https://chatgpt.com/*",
+    "https://claude.ai/*",
+    "https://*.claude.ai/*",
+  ],
   main() {
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", () => {
