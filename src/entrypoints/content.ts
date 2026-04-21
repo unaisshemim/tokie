@@ -1,18 +1,10 @@
-import initTokenTracker from "./tracker";
-import { getSessionId } from "./tracker/tokeUsage";
+import type { MessageRequest } from "@/skills/messages";
+import { mountFloatingLauncher } from "@/skills/floatingLauncher";
 
-let lastSessionId: string | null = null;
-let trackerInitialized = false;
-
-function startOrUpdateTracker() {
-  const currentSessionId = getSessionId();
-  if (currentSessionId !== lastSessionId) {
-    lastSessionId = currentSessionId;
-    const oldWidget = document.querySelector(".tokie-widget");
-    if (oldWidget) oldWidget.remove();
-    initTokenTracker();
-    trackerInitialized = true;
-  }
+function openSkillsModal() {
+  void import("@/skills").then(({ toggleSkillsModal }) =>
+    toggleSkillsModal()
+  );
 }
 
 export default defineContentScript({
@@ -23,19 +15,12 @@ export default defineContentScript({
     "https://*.claude.ai/*",
   ],
   main() {
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", () => {
-        startOrUpdateTracker();
-      });
-    } else {
-      startOrUpdateTracker();
-    }
-    let lastUrl = location.pathname;
-    setInterval(() => {
-      if (location.pathname !== lastUrl) {
-        lastUrl = location.pathname;
-        startOrUpdateTracker();
+    mountFloatingLauncher(openSkillsModal);
+
+    browser.runtime.onMessage.addListener((message: MessageRequest) => {
+      if (message?.type === "TOGGLE_SKILLS_MODAL") {
+        openSkillsModal();
       }
-    }, 500);
+    });
   },
 });

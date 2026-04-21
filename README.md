@@ -24,6 +24,7 @@
 ---
 
 ## 🧩 <span style="color:#2196F3">The Problem</span>
+
 ChatGPT has a limit on how much it can "remember" in a single conversation. It’s not about how long the chat looks — it’s about tokens. Tokens are chunks of words, and once a session reaches the limit, things start breaking:
 
 - ❌ <span style="color:#F44336">It stops remembering earlier parts of your chat.</span>
@@ -36,6 +37,7 @@ You never know when you're about to hit that limit.
 ---
 
 ## 🚀 <span style="color:#4CAF50">The Solution: Tokie</span>
+
 Tokie is a lightweight browser extension that gives you real-time awareness of your token usage while chatting with ChatGPT.
 
 Whether you’re a casual user or a power user writing long prompts, Tokie helps you stay in control.
@@ -56,13 +58,14 @@ Whether you’re a casual user or a power user writing long prompts, Tokie helps
 
 The **context window** is how much information ChatGPT can process at once. Once you pass the limit, it starts forgetting earlier messages.
 
-| Tier             | Token Limit        | Approx. Word Count | Notes |
-|------------------|--------------------|--------------------|-------|
-| Free             | ~16,000 tokens     | ~12,000 words      | Shorter sessions; large inputs may need summarizing or splitting. |
-| Plus             | ~32,000 tokens     | ~24,000 words      | Great for longer chats and bigger uploads, but still capped below Pro/Enterprise. |
+| Tier             | Token Limit            | Approx. Word Count   | Notes                                                                                                                  |
+| ---------------- | ---------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Free             | ~16,000 tokens         | ~12,000 words        | Shorter sessions; large inputs may need summarizing or splitting.                                                      |
+| Plus             | ~32,000 tokens         | ~24,000 words        | Great for longer chats and bigger uploads, but still capped below Pro/Enterprise.                                      |
 | Pro / Enterprise | 128,000-256,000 tokens | 96,000-192,000 words | GPT-5.1 supports larger context windows. API access can reach up to 272,000 input + 128,000 output tokens per request. |
 
 **Key Takeaways:**
+
 - Free tier provides ~16,000 tokens (~12,000 words) — double the previous limit.
 - Plus offers 2× the space of Free, ideal for heavy research or extended creative work.
 - Pro/Enterprise with GPT-5.1 supports 128K-256K context windows for truly massive contexts.
@@ -73,9 +76,12 @@ The **context window** is how much information ChatGPT can process at once. Once
 ## ⚙️ <span style="color:#FF5722">Getting Started</span>
 
 ### Requirements
+
 - Node.js v20+
 - npm or yarn
 
 ### Development
+
 ```bash
 npm install
+```
