@@ -20,6 +20,9 @@ export function getPlatformConfig(): PlatformConfig {
     return {
       platform: "claude",
       composerSelectors: [
+        '[contenteditable="true"][role="textbox"]',
+        '[contenteditable="true"][data-placeholder]',
+        '[contenteditable="true"][aria-placeholder]',
         'div[contenteditable="true"][aria-label^="Write"]',
         'div[contenteditable="true"].ProseMirror',
         'div[contenteditable="true"]',

@@ -3,10 +3,25 @@ import { getPlatformConfig } from "@/platform";
 function findComposer(): HTMLElement | null {
   const { composerSelectors } = getPlatformConfig();
   for (const selector of composerSelectors) {
-    const el = document.querySelector<HTMLElement>(selector);
-    if (el) return el;
+    const els = Array.from(document.querySelectorAll<HTMLElement>(selector));
+    const visible = els.find(isVisibleComposer);
+    if (visible) return visible;
   }
   return null;
+}
+
+function isVisibleComposer(el: HTMLElement): boolean {
+  if (el.getAttribute("aria-hidden") === "true") return false;
+
+  const rect = el.getBoundingClientRect();
+  if (rect.width < 20 || rect.height < 10) return false;
+
+  const style = window.getComputedStyle(el);
+  return (
+    style.visibility !== "hidden" &&
+    style.display !== "none" &&
+    Number(style.opacity) !== 0
+  );
 }
 
 function getCurrentText(el: HTMLElement): string {
@@ -42,6 +57,48 @@ function insertIntoTextarea(
   return true;
 }
 
+function dispatchTextInput(el: HTMLElement, text: string, inputType: string): boolean {
+  const beforeInput = new InputEvent("beforeinput", {
+    bubbles: true,
+    cancelable: true,
+    composed: true,
+    inputType,
+    data: text,
+  });
+  el.dispatchEvent(beforeInput);
+
+  if (beforeInput.defaultPrevented) {
+    return true;
+  }
+
+  el.dispatchEvent(
+    new InputEvent("input", {
+      bubbles: true,
+      composed: true,
+      inputType,
+      data: text,
+    })
+  );
+  return false;
+}
+
+function dispatchPaste(el: HTMLElement, text: string): boolean {
+  try {
+    const data = new DataTransfer();
+    data.setData("text/plain", text);
+    const paste = new ClipboardEvent("paste", {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+      clipboardData: data,
+    });
+    el.dispatchEvent(paste);
+    return paste.defaultPrevented;
+  } catch {
+    return false;
+  }
+}
+
 function insertIntoContentEditable(el: HTMLElement, text: string): boolean {
   el.focus();
 
@@ -66,27 +123,18 @@ function insertIntoContentEditable(el: HTMLElement, text: string): boolean {
   }
 
   if (!inserted) {
-    const evt = new InputEvent("beforeinput", {
-      bubbles: true,
-      cancelable: true,
-      inputType: "insertText",
-      data: payload,
-    });
-    el.dispatchEvent(evt);
-    if (!evt.defaultPrevented) {
-      const lines = payload.split("\n");
-      for (let i = 0; i < lines.length; i++) {
-        if (i > 0) el.appendChild(document.createElement("br"));
-        if (lines[i]) el.appendChild(document.createTextNode(lines[i]));
-      }
+    inserted =
+      dispatchPaste(el, payload) ||
+      dispatchTextInput(el, payload, "insertFromPaste") ||
+      dispatchTextInput(el, payload, "insertText");
+  }
+
+  if (!inserted && !el.classList.contains("ProseMirror")) {
+    const lines = payload.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      if (i > 0) el.appendChild(document.createElement("br"));
+      if (lines[i]) el.appendChild(document.createTextNode(lines[i]));
     }
-    el.dispatchEvent(
-      new InputEvent("input", {
-        bubbles: true,
-        inputType: "insertText",
-        data: payload,
-      })
-    );
     inserted = true;
   }
 
