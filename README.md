@@ -1,87 +1,128 @@
-<p align="center">
-  <img src="src/assets/happyCat.png" alt="Tokie Logo" width="200" />
-</p>
+# Tokie
 
-<h1 align="center">🧠 <span style="color:#4CAF50">Tokie</span> — <span style="color:#FF5722">Know When ChatGPT Is Reaching Its Limit</span></h1>
+Tokie is a browser extension that injects searchable agent skills into ChatGPT and Claude composers.
 
-<p align="center">
-  <em>Ever felt like ChatGPT was "forgetting" what you said earlier? Or giving weird, short, or off-topic answers? Chances are…<br>
-  <strong style="color:#FF9800">you ran out of tokens.</strong></em>
-</p>
+It adds a floating launcher to supported chat pages, searches the public [skills.sh](https://skills.sh) directory, loads the selected skill text from GitHub, asks for a few task-specific details, and inserts the resulting prompt into the active composer.
 
-<p align="center">
-  <a href="https://chromewebstore.google.com/detail/tokie/aegmlcmdhpokpgpbbmgdllifocodbbao">
-    <img src="https://img.shields.io/badge/🎯_Install_Now-Chrome_Web_Store-4285F4?style=for-the-badge&logo=google-chrome&logoColor=white" alt="Install from Chrome Web Store" />
-  </a>
-</p>
+## Features
 
-<p align="center">
-  <a href="https://chromewebstore.google.com/detail/tokie/aegmlcmdhpokpgpbbmgdllifocodbbao">
-    <img src="https://img.shields.io/chrome-web-store/users/aegmlcmdhpokpgpbbmgdllifocodbbao?style=for-the-badge&logo=google-chrome&logoColor=white&label=Users&labelColor=4285F4&color=green" alt="Chrome Web Store Users" />
-  </a>
-</p>
+- Search public skills from `skills.sh` without leaving ChatGPT or Claude.
+- Fetch `SKILL.md` content from the skill source repository on GitHub.
+- Cache fetched skill bodies locally for 24 hours.
+- Add task context before insertion with a short three-question flow.
+- Insert into textarea, input, contenteditable, and ProseMirror-style composers.
+- Open the skills modal from either the floating launcher or the extension action.
 
----
+## Supported Sites
 
-## 🧩 <span style="color:#2196F3">The Problem</span>
+- `https://chatgpt.com/*`
+- `https://chat.openai.com/*`
+- `https://claude.ai/*`
+- `https://*.claude.ai/*`
 
-ChatGPT has a limit on how much it can "remember" in a single conversation. It’s not about how long the chat looks — it’s about tokens. Tokens are chunks of words, and once a session reaches the limit, things start breaking:
+## How It Works
 
-- ❌ <span style="color:#F44336">It stops remembering earlier parts of your chat.</span>
-- ❌ <span style="color:#F44336">Answers get confusing or off-topic.</span>
-- ❌ <span style="color:#F44336">You lose context, continuity, and quality.</span>
+1. Open ChatGPT or Claude with the extension installed.
+2. Click the Tokie floating launcher in the bottom-right corner, or click the browser extension action.
+3. Search for a skill by keyword.
+4. Select a result.
+5. Answer the follow-up prompts:
+   - What are you trying to build or do?
+   - What issue or error are you facing?
+   - Share any important context or constraints.
+6. Tokie inserts the skill content plus your details into the chat composer.
 
-The problem?  
-You never know when you're about to hit that limit.
+Keyboard shortcuts inside the modal:
 
----
+- `ArrowUp` / `ArrowDown`: move through search results
+- `Enter`: select the active search result
+- `Esc`: close the modal, or cancel the question flow
+- `Ctrl+Enter` / `Cmd+Enter`: advance through questions or insert the skill
 
-## 🚀 <span style="color:#4CAF50">The Solution: Tokie</span>
-
-Tokie is a lightweight browser extension that gives you real-time awareness of your token usage while chatting with ChatGPT.
-
-Whether you’re a casual user or a power user writing long prompts, Tokie helps you stay in control.
-
----
-
-## 🔍 <span style="color:#FF9800">What Tokie Does</span>
-
-- 🧮 **<span style="color:#4CAF50">Live Token Tracker</span>** — See how many tokens you've used in your current session.
-- 💬 **<span style="color:#2196F3">Session-Aware</span>** — Tracks usage per conversation window.
-- 🧷 **<span style="color:#FF5722">Overlay Widget</span>** — Floating progress bar right inside ChatGPT.
-- 🧠 **<span style="color:#9C27B0">Network Smart</span>** — Intercepts ChatGPT traffic and calculates tokens, even for streamed responses.
-- 🧪 **<span style="color:#FFC107">Accurate & Transparent</span>** — Know the limits. Plan your prompts. Never be surprised again.
-
----
-
-## 📊 <span style="color:#4CAF50">GPT-5.1 Context Window Limits (November 2025)</span>
-
-The **context window** is how much information ChatGPT can process at once. Once you pass the limit, it starts forgetting earlier messages.
-
-| Tier             | Token Limit            | Approx. Word Count   | Notes                                                                                                                  |
-| ---------------- | ---------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Free             | ~16,000 tokens         | ~12,000 words        | Shorter sessions; large inputs may need summarizing or splitting.                                                      |
-| Plus             | ~32,000 tokens         | ~24,000 words        | Great for longer chats and bigger uploads, but still capped below Pro/Enterprise.                                      |
-| Pro / Enterprise | 128,000-256,000 tokens | 96,000-192,000 words | GPT-5.1 supports larger context windows. API access can reach up to 272,000 input + 128,000 output tokens per request. |
-
-**Key Takeaways:**
-
-- Free tier provides ~16,000 tokens (~12,000 words) — double the previous limit.
-- Plus offers 2× the space of Free, ideal for heavy research or extended creative work.
-- Pro/Enterprise with GPT-5.1 supports 128K-256K context windows for truly massive contexts.
-- API access supports up to 272,000 input tokens and 128,000 output tokens per request.
-
----
-
-## ⚙️ <span style="color:#FF5722">Getting Started</span>
+## Development
 
 ### Requirements
 
-- Node.js v20+
-- npm or yarn
+- Node.js 20+
+- npm
 
-### Development
+### Install
 
 ```bash
 npm install
 ```
+
+### Run Locally
+
+```bash
+npm run dev
+```
+
+For Firefox:
+
+```bash
+npm run dev:firefox
+```
+
+WXT will print the browser-specific extension output path. Load that unpacked extension in your browser's extension developer mode.
+
+### Type Check
+
+```bash
+npm run compile
+```
+
+### Build
+
+```bash
+npm run build
+```
+
+For Firefox:
+
+```bash
+npm run build:firefox
+```
+
+### Package
+
+```bash
+npm run zip
+```
+
+For Firefox:
+
+```bash
+npm run zip:firefox
+```
+
+## Project Structure
+
+```text
+src/
+  entrypoints/
+    background.ts      Background service worker, action handling, skills.sh search, GitHub fetches
+    content.ts         Content script that mounts the launcher and listens for modal messages
+  skills/
+    SkillsModal.tsx    Search UI and follow-up question flow
+    floatingLauncher.ts
+    injector.ts        Composer detection and text insertion
+    skillsRegistry.ts  Content-script API for skill search and fetch messages
+    messages.ts        Shared runtime message types
+  platform.ts          ChatGPT and Claude composer selector configuration
+wxt.config.ts          WXT manifest, permissions, aliases, and Vite configuration
+```
+
+## Permissions
+
+Tokie requests:
+
+- `storage`: caches fetched skill bodies locally.
+- `activeTab`: toggles the modal on the active supported chat tab.
+- Host access for ChatGPT, Claude, `skills.sh`, and GitHub raw content.
+
+## Notes
+
+- Search results come from `https://skills.sh/api/search`.
+- Skill content is resolved from GitHub repositories using common `SKILL.md`, `skill.md`, and `README.md` paths, with a repository-tree fallback.
+- If the extension action is clicked outside a supported site, Tokie opens `https://chatgpt.com`.
