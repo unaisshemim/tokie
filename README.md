@@ -9,7 +9,6 @@ It adds a floating launcher to supported chat pages, searches the public [skills
 - Search public skills from `skills.sh` without leaving ChatGPT or Claude.
 - Fetch `SKILL.md` content from the skill source repository on GitHub.
 - Cache fetched skill bodies locally for 24 hours.
-- Add task context before insertion with a short three-question flow.
 - Insert into textarea, input, contenteditable, and ProseMirror-style composers.
 - Open the skills modal from either the floating launcher or the extension action.
 
@@ -26,18 +25,13 @@ It adds a floating launcher to supported chat pages, searches the public [skills
 2. Click the Tokie floating launcher in the bottom-right corner, or click the browser extension action.
 3. Search for a skill by keyword.
 4. Select a result.
-5. Answer the follow-up prompts:
-   - What are you trying to build or do?
-   - What issue or error are you facing?
-   - Share any important context or constraints.
-6. Tokie inserts the skill content plus your details into the chat composer.
+5. Tokie inserts the skill content into the chat composer.
 
 Keyboard shortcuts inside the modal:
 
 - `ArrowUp` / `ArrowDown`: move through search results
 - `Enter`: select the active search result
 - `Esc`: close the modal, or cancel the question flow
-- `Ctrl+Enter` / `Cmd+Enter`: advance through questions or insert the skill
 
 ## Development
 
@@ -104,7 +98,7 @@ src/
     background.ts      Background service worker, action handling, skills.sh search, GitHub fetches
     content.ts         Content script that mounts the launcher and listens for modal messages
   skills/
-    SkillsModal.tsx    Search UI and follow-up question flow
+    SkillsModal.tsx    Search UI and direct skill insertion
     floatingLauncher.ts
     injector.ts        Composer detection and text insertion
     skillsRegistry.ts  Content-script API for skill search and fetch messages

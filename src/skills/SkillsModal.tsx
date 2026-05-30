@@ -8,12 +8,6 @@ interface SkillsModalProps {
   onClose: () => void;
 }
 
-const FOLLOW_UP_QUESTIONS = [
-  "What are you trying to build or do?",
-  "What issue or error are you facing?",
-  "Share any important context or constraints.",
-] as const;
-
 function ShimmerLoader() {
   return (
     <>
@@ -84,16 +78,9 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ onClose }) => {
   const [activeIdx, setActiveIdx] = useState(0);
   const [inserting, setInserting] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  const [pendingSkillBody, setPendingSkillBody] = useState<string | null>(null);
-  const [pendingSkillName, setPendingSkillName] = useState<string | null>(null);
-  const [questionStep, setQuestionStep] = useState<number | null>(null);
-  const [answers, setAnswers] = useState<string[]>(
-    FOLLOW_UP_QUESTIONS.map(() => "")
-  );
 
   const searchRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
-  const answerRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     const t = setTimeout(() => searchRef.current?.focus(), 10);
@@ -145,19 +132,6 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ onClose }) => {
     node?.scrollIntoView({ block: "nearest" });
   }, [activeIdx, results.length]);
 
-  useEffect(() => {
-    if (questionStep === null) return;
-    const t = window.setTimeout(() => answerRef.current?.focus(), 10);
-    return () => window.clearTimeout(t);
-  }, [questionStep]);
-
-  const resetQuestionFlow = useCallback(() => {
-    setQuestionStep(null);
-    setPendingSkillBody(null);
-    setPendingSkillName(null);
-    setAnswers(FOLLOW_UP_QUESTIONS.map(() => ""));
-  }, []);
-
   const handleSelect = useCallback(
     async (hit: SkillsShHit) => {
       if (inserting) return;
@@ -166,59 +140,31 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ onClose }) => {
       try {
         const raw = await getSkillBodyForHit(hit);
         const body = stripFrontmatter(raw).trim();
-        setPendingSkillBody(body);
-        setPendingSkillName(hit.name);
-        setAnswers(FOLLOW_UP_QUESTIONS.map(() => ""));
-        setQuestionStep(0);
-        setInserting(null);
+        const res = injectSkillText(body);
+        if (!res.ok) {
+          setToast(
+            res.reason === "no_composer"
+              ? "Could not find the chat input on this page."
+              : "Failed to insert into the chat input."
+          );
+          setInserting(null);
+          return;
+        }
+        onClose();
       } catch (e) {
         setToast(e instanceof Error ? e.message : String(e));
         setInserting(null);
       }
     },
-    [inserting],
+    [inserting, onClose],
   );
-
-  const handleInjectFromAnswers = useCallback(() => {
-    if (!pendingSkillBody) return;
-    const userDetails =
-      "User details:\n" +
-      `- Goal: ${answers[0].trim() || "(not provided)"}\n` +
-      `- Issue: ${answers[1].trim() || "(not provided)"}\n` +
-      `- Context: ${answers[2].trim() || "(not provided)"}`;
-
-    const res = injectSkillText(`${pendingSkillBody}\n\n${userDetails}`);
-    if (!res.ok) {
-      setToast(
-        res.reason === "no_composer"
-          ? "Could not find the chat input on this page."
-          : "Failed to insert into the chat input."
-      );
-      return;
-    }
-    onClose();
-  }, [answers, pendingSkillBody, onClose]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
+      e.stopPropagation();
       if (e.key === "Escape") {
         e.preventDefault();
-        if (questionStep !== null) {
-          resetQuestionFlow();
-        } else {
-          onClose();
-        }
-        return;
-      }
-      if (questionStep !== null) {
-        if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-          e.preventDefault();
-          if (questionStep >= FOLLOW_UP_QUESTIONS.length - 1) {
-            handleInjectFromAnswers();
-          } else {
-            setQuestionStep((s) => (s === null ? 0 : s + 1));
-          }
-        }
+        onClose();
         return;
       }
       if (e.key === "ArrowDown") {
@@ -242,9 +188,6 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ onClose }) => {
       results,
       handleSelect,
       onClose,
-      questionStep,
-      resetQuestionFlow,
-      handleInjectFromAnswers,
     ],
   );
 
@@ -256,6 +199,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ onClose }) => {
   return (
     <div
       onMouseDown={(e) => {
+        e.stopPropagation();
         if (e.target === e.currentTarget) onClose();
       }}
       style={{
@@ -271,6 +215,8 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ onClose }) => {
           "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
       }}
       onKeyDown={handleKeyDown}
+      onKeyUp={(e) => e.stopPropagation()}
+      onKeyPress={(e) => e.stopPropagation()}
     >
       <div
         role="dialog"
@@ -298,9 +244,26 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ onClose }) => {
             gap: 10,
           }}
         >
+          <img
+            src={browser.runtime.getURL(
+              "icon/96.png" as Parameters<typeof browser.runtime.getURL>[0]
+            )}
+            alt="Tokie"
+            width={28}
+            height={28}
+            style={{ display: "block", borderRadius: 7 }}
+          />
           <span style={{ fontSize: 14, fontWeight: 600, color: "#334155" }}>
             Tokie · Skills
           </span>
+          <a
+            href="https://tokie.space"
+            target="_blank"
+            rel="noreferrer"
+            style={{ color: "#2563eb", fontSize: 12, textDecoration: "none" }}
+          >
+            tokie.space
+          </a>
           <span
             style={{
               fontSize: 11,
@@ -338,7 +301,6 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ onClose }) => {
             placeholder="Search skills.sh (2+ characters)…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            disabled={questionStep !== null}
             style={{
               width: "100%",
               padding: "11px 12px",
@@ -348,7 +310,6 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ onClose }) => {
               color: "#0f172a",
               outline: "none",
               fontSize: 14,
-              opacity: questionStep !== null ? 0.65 : 1,
             }}
           />
         </div>
@@ -363,151 +324,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ onClose }) => {
             position: "relative",
           }}
         >
-          {questionStep !== null && (
-            <div style={{ padding: 16, display: "grid", gap: 12 }}>
-              <div
-                style={{
-                  border: "1px solid #e5edf8",
-                  background: "#f8fbff",
-                  borderRadius: 12,
-                  padding: "10px 12px",
-                }}
-              >
-                <div style={{ fontSize: 11, color: "#64748b", marginBottom: 4 }}>
-                  Selected skill
-                </div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: "#1e293b" }}>
-                  {pendingSkillName}
-                </div>
-              </div>
-              <div style={{ fontSize: 12, color: "#64748b" }}>
-                Question {questionStep + 1} of {FOLLOW_UP_QUESTIONS.length}
-              </div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: "#0f172a" }}>
-                {FOLLOW_UP_QUESTIONS[questionStep]}
-              </div>
-              <textarea
-                ref={answerRef}
-                value={answers[questionStep] ?? ""}
-                onChange={(e) =>
-                  setAnswers((prev) => {
-                    const next = [...prev];
-                    next[questionStep] = e.target.value;
-                    return next;
-                  })
-                }
-                placeholder="Type your answer here..."
-                style={{
-                  minHeight: 100,
-                  resize: "vertical",
-                  width: "100%",
-                  padding: "10px 12px",
-                  borderRadius: 10,
-                  border: "1px solid #d9e2ee",
-                  background: "#ffffff",
-                  color: "#0f172a",
-                  fontSize: 14,
-                  lineHeight: 1.45,
-                  outline: "none",
-                  boxSizing: "border-box",
-                }}
-              />
-              <div
-                style={{
-                  display: "flex",
-                  gap: 8,
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <button
-                  onClick={() =>
-                    setQuestionStep((s) => (s !== null && s > 0 ? s - 1 : s))
-                  }
-                  disabled={questionStep === 0}
-                  style={{
-                    border: "1px solid #dbe3ed",
-                    borderRadius: 9,
-                    background: "#fff",
-                    color: "#475569",
-                    fontSize: 12,
-                    padding: "7px 10px",
-                    cursor: questionStep === 0 ? "not-allowed" : "pointer",
-                    opacity: questionStep === 0 ? 0.5 : 1,
-                  }}
-                >
-                  Back
-                </button>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button
-                    onClick={() => {
-                      resetQuestionFlow();
-                      setToast("Skill insert cancelled.");
-                    }}
-                    style={{
-                      border: "1px solid #dbe3ed",
-                      borderRadius: 9,
-                      background: "#fff",
-                      color: "#475569",
-                      fontSize: 12,
-                      padding: "7px 10px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Cancel
-                  </button>
-                  {questionStep < FOLLOW_UP_QUESTIONS.length - 1 && (
-                    <button
-                      onClick={() => setQuestionStep((s) => (s === null ? 0 : s + 1))}
-                      style={{
-                        border: "1px solid #dbe3ed",
-                        borderRadius: 9,
-                        background: "#fff",
-                        color: "#475569",
-                        fontSize: 12,
-                        padding: "7px 10px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Skip
-                    </button>
-                  )}
-                  {questionStep < FOLLOW_UP_QUESTIONS.length - 1 ? (
-                    <button
-                      onClick={() => setQuestionStep((s) => (s === null ? 0 : s + 1))}
-                      style={{
-                        border: "1px solid #2563eb",
-                        borderRadius: 9,
-                        background: "#2563eb",
-                        color: "#fff",
-                        fontSize: 12,
-                        padding: "7px 12px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Next
-                    </button>
-                  ) : (
-                    <button
-                      onClick={handleInjectFromAnswers}
-                      style={{
-                        border: "1px solid #2563eb",
-                        borderRadius: 9,
-                        background: "#2563eb",
-                        color: "#fff",
-                        fontSize: 12,
-                        padding: "7px 12px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Insert skill
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-          {questionStep === null && searchLoading && (
+          {searchLoading && (
             <div
               style={{
                 position: "absolute",
@@ -525,7 +342,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ onClose }) => {
               <ShimmerLoader />
             </div>
           )}
-          {questionStep === null && showTooShort && (
+          {showTooShort && (
             <div
               style={{
                 padding: 24,
@@ -547,7 +364,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ onClose }) => {
               .
             </div>
           )}
-          {questionStep === null && !showTooShort && q.length === 0 && (
+          {!showTooShort && q.length === 0 && (
             <div
               style={{
                 padding: 24,
@@ -560,12 +377,12 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ onClose }) => {
               <strong>react</strong>) to search the public skills directory.
             </div>
           )}
-          {questionStep === null && searchError && (
+          {searchError && (
             <div style={{ padding: 24, textAlign: "center", color: "#dc2626" }}>
               {searchError}
             </div>
           )}
-          {questionStep === null && showEmpty && (
+          {showEmpty && (
             <div
               style={{
                 padding: 24,
@@ -577,8 +394,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ onClose }) => {
               No skills match &quot;{query.trim()}&quot; on skills.sh.
             </div>
           )}
-          {questionStep === null &&
-            results.map((hit, idx) => {
+          {results.map((hit, idx) => {
             const isActive = idx === activeIdx;
             const isIns = inserting === hit.id;
             return (
@@ -662,9 +478,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ onClose }) => {
             }}
           >
             <span>
-              {questionStep === null
-                ? "↑ ↓ navigate · Enter insert · Esc close"
-                : "Ctrl/Cmd + Enter next/insert · Esc cancel"}
+              ↑ ↓ navigate · Enter insert · Esc close
             </span>
             {toast && <span style={{ color: "#dc2626" }}>{toast}</span>}
           </div>
